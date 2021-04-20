@@ -59,8 +59,8 @@ Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t
 {
     Mutation mutation;
     mutation.first = position;
-    size_t last  = position + 1;
 
+    size_t last  = position + 1;
     while (lhs[last] != rhs[last] || lhs[last] == '-' && rhs[last] == '-') ++last;
 
     if (last - mutation.first != 1)
@@ -124,13 +124,8 @@ std::string to_string(unsigned flag)
     static const std::string snp = "SNP";
 
     if (flag & MIX) return mix;
-
-    if (flag & INS)
-        return ins;
-
-    if (flag & DEL)
-        return del;
-
+    if (flag & INS) return ins;
+    if (flag & DEL) return del;
     return snp;
 }
 
