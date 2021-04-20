@@ -47,8 +47,10 @@ unsigned is_mutation(const std::string &lhs, const std::string &rhs, size_t &pos
     }
 
     if (lhs[position] != rhs[position])
+    {
         if (rhs[position] == '-') flag |= DEL;
         else flag |= SNP;
+    }
 
     return flag;
 }
@@ -65,17 +67,23 @@ Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t
         while (lhs[mutation.last] == '-') ++mutation.last;
         mutation.snp = rhs[position];
         mutation.str = remove_gap(rhs.substr(position + 1, mutation.last - mutation.first - 1));
+        if (mutation.last - mutation.first > 2 || lhs[position] != rhs[position])
+            mutation.flag |= MIX;
     }
     else if (flag & DEL)
     {
         while (mutation.last != lhs.size() && rhs[mutation.last] == '-' && lhs[mutation.last] != '-')
             ++mutation.last;
+        if (mutation.last - mutation.first > 1)
+            mutation.flag |= MIX; 
     }
     else if (flag & SNP)
     {
         while (mutation.last != lhs.size() && lhs[mutation.last] != rhs[mutation.last] && lhs[mutation.last] != '-')
             ++mutation.last;
         mutation.str = remove_gap(rhs.substr(position, mutation.last - mutation.first));
+        if (mutation.last - mutation.first > 1)
+            mutation.flag |= MIX;
     }
 
     position = mutation.last - 1;
@@ -162,11 +170,18 @@ std::string Mutation::to_string() const
 
 std::string to_string(unsigned flag)
 {
+    static const std::string mix = "MIX";
+    static const std::string ins = "INS";
+    static const std::string del = "DEL";
+    static const std::string snp = "SNP";
+
+    if (flag & MIX) return mix;
+
     if (flag & INS)
-        return flag & ~INS ? "MIX" : "INS";
+        return ins;
 
     if (flag & DEL)
-        return "DEL";
+        return del;
 
-    return "SNP";
+    return snp;
 }

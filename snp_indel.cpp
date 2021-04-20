@@ -10,6 +10,12 @@ void to_lower(Fasta &file) noexcept;
 
 int main(int argc, char **argv)
 {
+    if (argc != 3)
+    {
+        std::cout << argv[0] << " infile outfile\n";
+        exit(0);
+    }
+
     Fasta infile(argv[1]);
     to_lower(infile);
 
