@@ -39,7 +39,7 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
     for (size_t i = 0; i != row; ++i)
         if (mutated_sequence_mark[i]) oss << infile.identifications[i] << '\t';
 
-    std::string line(oss.str());
+    std::string line = oss.str();
     if (line.back() == '\t') line.pop_back();
     ofs << line << '\n';
 
@@ -62,8 +62,8 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
         ofs << "1\t"
             << map_to_centre_site[mutation.first] << "\t"
                ".\t"
-            << remove_gap(centre.substr(mutation.first, mutation.last - mutation.first)) << '\t'
-            << mutation.to_string() << '\t'
+            << remove_gap(mutation.l.cbegin(), mutation.l.cend()) << '\t'
+            << remove_gap(mutation.r.cbegin(), mutation.r.cend()) << '\t'
             << to_string(mutation.flag) << '\t'
             << ".\t"
                ".\t"

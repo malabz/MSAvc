@@ -9,7 +9,7 @@ void to_lower(Fasta &file);
 using matrix_type = std::vector<std::string>;
 
 unsigned is_mutation(const std::string &lhs, const std::string &rhs, size_t &position);
-Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position, unsigned flag);
+Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position);
 
 std::unordered_map<Mutation, std::vector<size_t>, hash> search_in(const Fasta &infile)
 {
@@ -25,8 +25,8 @@ std::unordered_map<Mutation, std::vector<size_t>, hash> search_in(const Fasta &i
         const std::string &curr_sequence = matrix[i];
 
         for (size_t j = 0; j != col; ++j)
-            if (unsigned flag = is_mutation(centre, curr_sequence, j))
-                mutations[extract_mutation(centre, curr_sequence, j, flag)].push_back(i);
+            if (centre[j] != curr_sequence[j])
+                mutations[extract_mutation(centre, curr_sequence, j)].push_back(i);
     }
 
     return mutations;
@@ -55,38 +55,34 @@ unsigned is_mutation(const std::string &lhs, const std::string &rhs, size_t &pos
     return flag;
 }
 
-Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position, unsigned flag)
+Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position)
 {
     Mutation mutation;
     mutation.first = position;
-    mutation.last  = position + 1;
-    mutation.flag  = flag;
+    size_t last  = position + 1;
 
-    if (flag & INS)
-    {
-        while (lhs[mutation.last] == '-') ++mutation.last;
-        mutation.snp = rhs[position];
-        mutation.str = remove_gap(rhs.substr(position + 1, mutation.last - mutation.first - 1));
-        if (mutation.last - mutation.first > 2 || lhs[position] != rhs[position])
-            mutation.flag |= MIX;
-    }
-    else if (flag & DEL)
-    {
-        while (mutation.last != lhs.size() && rhs[mutation.last] == '-' && lhs[mutation.last] != '-')
-            ++mutation.last;
-        if (mutation.last - mutation.first > 1)
-            mutation.flag |= MIX; 
-    }
-    else if (flag & SNP)
-    {
-        while (mutation.last != lhs.size() && lhs[mutation.last] != rhs[mutation.last] && lhs[mutation.last] != '-')
-            ++mutation.last;
-        mutation.str = remove_gap(rhs.substr(position, mutation.last - mutation.first));
-        if (mutation.last - mutation.first > 1)
-            mutation.flag |= MIX;
-    }
+    while (lhs[last] != rhs[last] || lhs[last] == '-' && rhs[last] == '-') ++last;
 
-    position = mutation.last - 1;
+    if (last - mutation.first != 1)
+        mutation.flag = MIX;
+    else if (lhs[position] == '-')
+        mutation.flag = INS;
+    else if (rhs[position] == '-')
+        mutation.flag = DEL;
+    else
+        mutation.flag = SNP;
+
+    while (lhs[mutation.first] == '-' || rhs[mutation.first] == '-')
+        --mutation.first;
+
+    for (size_t i = mutation.first; i != last; ++i)
+        if (lhs[i] != '-' || rhs[i] != '-')
+        {
+            mutation.l.push_back(lhs[i]);
+            mutation.r.push_back(rhs[i]);
+        }
+
+    position = last - 1;
     return mutation;
 }
 
@@ -107,65 +103,17 @@ bool contain_snp(const matrix_type &sequences, size_t column)
     return false;
 }
 
-std::string remove_gap(const std::string &str)
-{
-    std::string gap_removed;
-    gap_removed.reserve(str.size());
-
-    for (size_t i = 0; i != str.size(); ++i)
-        if (str[i] != '-') gap_removed.push_back(str[i]);
-
-    return gap_removed;
-}
-
 size_t hash::operator()(const Mutation &mutation) const noexcept
 {
     size_t hash_value = 0;
     hash_value ^= mutation.first;
-    hash_value ^= mutation.last;
     hash_value ^= mutation.flag;
 
-    if (mutation.flag & INS)
-    {
-        hash_value ^= std::hash<std::string>()(mutation.str);
-        if (mutation.flag & SNP)
-            hash_value ^= mutation.snp;
-    }
-    else if (mutation.flag & SNP)
-    {
-        hash_value ^= std::hash<std::string>()(mutation.str);
-    }
+    std::hash<std::string> hash;
+    hash_value ^= hash(mutation.l);
+    hash_value ^= hash(mutation.r);
 
     return hash_value;
-}
-
-bool Mutation::operator==(const Mutation &rhs) const noexcept
-{
-    if (first != rhs.first || last != rhs.last || flag != rhs.flag)
-        return false;
-
-    if (flag & INS)
-    {
-        if (str != rhs.str) return false;
-        if (flag & SNP && snp != rhs.snp) return false;
-        return true;
-    }
-
-    if (flag & SNP)
-        return str == rhs.str;
-
-    return true;
-}
-
-std::string Mutation::to_string() const
-{
-    if (flag & INS)
-        return flag & DEL ? str : snp + str;
-
-    if (flag & DEL)
-        return "*";
-
-    return str;
 }
 
 std::string to_string(unsigned flag)
@@ -184,4 +132,12 @@ std::string to_string(unsigned flag)
         return del;
 
     return snp;
+}
+
+bool Mutation::operator== (const Mutation &rhs) const noexcept
+{
+    return first == rhs.first &&
+           flag  == rhs.flag &&
+           l     == rhs.l &&
+           r     == rhs.r;
 }

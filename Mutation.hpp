@@ -14,10 +14,10 @@ constexpr unsigned MIX = 0x8;
 
 struct Mutation
 {
-    size_t first, last;
+    size_t first;
     unsigned flag;
-    char snp;           // valid if (flag & (INS | SNP))
-    std::string str;    // insertion or consecutive snp
+    std::string l;    // insertion or consecutive snp
+    std::string r;
 
     bool operator== (const Mutation &rhs) const noexcept;
     std::string to_string() const;
@@ -33,6 +33,15 @@ public:
 
 std::unordered_map<Mutation, std::vector<size_t>, hash> search_in(const Fasta &infile);
 
-std::string remove_gap(const std::string &str);
-
 std::string to_string(unsigned flag);
+
+template<typename InputIterator>
+std::string remove_gap(InputIterator first, InputIterator last)
+{
+    std::string str;
+    for (; first != last; ++first)
+        if (*first != '-')
+            str.push_back(*first);
+
+    return str;
+}
