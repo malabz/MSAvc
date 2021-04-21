@@ -21,7 +21,7 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
 
     size_t *map_to_centre_site = new size_t[col];
     for (size_t i = 0, index = 0; i != col; ++i)
-        if (centre[0] != '-') map_to_centre_site[i] = index++;
+        if (centre[i] != '-') map_to_centre_site[i] = index++;
 
     size_t *map_to_mutated_sequence = new size_t[row];
     for (size_t i = 0, index = 0; i != row; ++i)
@@ -35,7 +35,7 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
     }
 
     std::ostringstream oss;
-    oss << "#CHROM\tPOS\tID\tREF\tALT\tTYPE\tQUAL\tFILTER\tINFO\tFORMAT\t";
+    oss << "#CHROM\tPOS\tpos\tID\tREF\tALT\tTYPE\tQUAL\tFILTER\tINFO\tFORMAT\t";
     for (size_t i = 0; i != row; ++i)
         if (mutated_sequence_mark[i]) oss << infile.identifications[i] << '\t';
 
@@ -61,9 +61,10 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
 
         ofs << "1\t"
             << map_to_centre_site[mutation.first] << "\t"
+            << mutation.first << "\t"
                ".\t"
-            << remove_gap(mutation.l.cbegin(), mutation.l.cend()) << '\t'
-            << remove_gap(mutation.r.cbegin(), mutation.r.cend()) << '\t'
+            << mutation.l << '\t'
+            << mutation.r << '\t'
             << to_string(mutation.flag) << '\t'
             << ".\t"
                ".\t"

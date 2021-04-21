@@ -14,8 +14,8 @@ constexpr unsigned MIX = 0x8;
 
 struct Mutation
 {
-    size_t first;
     unsigned flag;
+    size_t first;
     std::string l;    // insertion or consecutive snp
     std::string r;
 
