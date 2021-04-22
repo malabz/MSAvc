@@ -6,7 +6,8 @@
 #include <cstring>
 #include <sstream>
 
-void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t>, hash> &mutations, const std::string &outfile_name)
+void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t>, hash> &mutations,
+            const std::string &outfile_name, const std::string &auxfile_name)
 {
     const std::vector<std::string> &matrix = infile.sequences;
     const std::string &centre = matrix[0];
@@ -28,9 +29,10 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
         if (mutated_sequence_mark[i]) map_to_mutated_sequence[i] = index++;
 
     std::ofstream ofs(outfile_name);
-    if (!ofs)
+    std::ofstream ofs_aux(auxfile_name);
+    if (!ofs || !ofs_aux)
     {
-        std::cout << "cannot write " << outfile_name << '\n';
+        std::cout << "cannot write\n";
         exit(0);
     }
 
@@ -42,6 +44,8 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
     std::string line = oss.str();
     if (line.back() == '\t') line.pop_back();
     ofs << line << '\n';
+
+    ofs_aux << '\n';
 
     using pair_type = std::pair<Mutation, std::vector<size_t>>;
     std::vector<pair_type> mutation_vector(mutations.cbegin(), mutations.cend());
@@ -79,6 +83,9 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
                   current_mutated_sequence_mark + mutated_sequence_number - 1,
                   std::ostream_iterator<bool>(ofs, "\t"));
         ofs << current_mutated_sequence_mark[mutated_sequence_number - 1] << '\n';
+
+        std::copy(occurrence.cbegin(), occurrence.cend(), std::ostream_iterator<size_t>(ofs_aux, ", "));
+        ofs_aux << '\n';
     }
 
     delete[] map_to_mutated_sequence;

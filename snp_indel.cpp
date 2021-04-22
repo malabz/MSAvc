@@ -10,9 +10,9 @@ void to_lower(Fasta &file) noexcept;
 
 int main(int argc, char **argv)
 {
-    if (argc != 3)
+    if (argc != 4)
     {
-        std::cout << argv[0] << " infile outfile\n";
+        std::cout << argv[0] << " infile outfile auxfile\n";
         exit(0);
     }
 
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     to_lower(infile);
 
     auto results = search_in(infile);
-    output(infile, results, argv[2]);
+    output(infile, results, argv[2], argv[3]);
 }
 
 void to_lower(Fasta &file) noexcept
