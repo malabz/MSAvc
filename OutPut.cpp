@@ -87,7 +87,8 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
         ofs << current_mutated_sequence_mark[mutated_sequence_number - 1] << '\n';
 
         ofs_aux << mutation.first << separator;
-        std::copy(occurrence.cbegin(), occurrence.cend(), std::ostream_iterator<size_t>(ofs_aux, separator));
+        for (size_t i = 0; i != occurrence.size(); ++i)
+            ofs_aux << occurrence[i] + 1 << separator;
         ofs_aux << '\n';
     }
 
