@@ -39,7 +39,7 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
     }
 
     std::ostringstream oss;
-    oss << "#CHROM\tPOS\tpos\tID\tREF\tALT\tTYPE\tQUAL\tFILTER\tINFO\tFORMAT\t";
+    oss << "#CHROM\tPOS\tpos\tID\tREF\tALT\tTYPE\tNUM\tQUAL\tFILTER\tINFO\tFORMAT\t";
     for (size_t i = 0; i != row; ++i)
         if (mutated_sequence_mark[i]) oss << infile.identifications[i] << '\t';
 
@@ -72,6 +72,7 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
             << mutation.l << '\t'
             << mutation.r << '\t'
             << to_string(mutation.flag) << '\t'
+            << occurrence.size() << '\t'
             << ".\t"
                ".\t"
                ".\t"
@@ -86,9 +87,9 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
                   std::ostream_iterator<bool>(ofs, "\t"));
         ofs << current_mutated_sequence_mark[mutated_sequence_number - 1] << '\n';
 
-        ofs_aux << mutation.first << separator;
+        ofs_aux << mutation.first << "p;";
         for (size_t i = 0; i != occurrence.size(); ++i)
-            ofs_aux << occurrence[i] + 1 << separator;
+            ofs_aux << occurrence[i] + 1 << "p;";
         ofs_aux << '\n';
     }
 
