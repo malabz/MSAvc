@@ -6,7 +6,7 @@
 #include <cstring>
 #include <sstream>
 
-void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t>, hash> &mutations,
+void output(const utils::Fasta &infile, std::unordered_map<mutation::Mutation, std::vector<size_t>, mutation::hash> &mutations,
             const std::string &outfile_name, const std::string &auxfile_name)
 {
     static constexpr char separator[] = ", ";
@@ -49,7 +49,7 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
 
     ofs_aux << '\n';
 
-    using pair_type = std::pair<Mutation, std::vector<size_t>>;
+    using pair_type = std::pair<mutation::Mutation, std::vector<size_t>>;
     std::vector<pair_type> mutation_vector(mutations.cbegin(), mutations.cend());
     std::sort(mutation_vector.begin(), mutation_vector.end(),
             [](const pair_type &lhs, const pair_type &rhs)
@@ -71,7 +71,7 @@ void output(const Fasta &infile, std::unordered_map<Mutation, std::vector<size_t
                ".\t"
             << mutation.l << '\t'
             << mutation.r << '\t'
-            << to_string(mutation.flag) << '\t'
+            << mutation::to_string(mutation.flag) << '\t'
             << occurrence.size() << '\t'
             << ".\t"
                ".\t"

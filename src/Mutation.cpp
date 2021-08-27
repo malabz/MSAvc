@@ -4,28 +4,28 @@
 #include <algorithm>
 #include <iterator>
 
-void to_lower(Fasta &file);
-
 using matrix_type = std::vector<std::string>;
 
-Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position);
+mutation::Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position);
 
-std::unordered_map<Mutation, std::vector<size_t>, hash> search_in(const Fasta &infile)
+std::unordered_map<mutation::Mutation, std::vector<size_t>, mutation::hash> search_in(const utils::Fasta &infile, size_t reference_index)
 {
     const matrix_type &matrix = infile.sequences;
-    const std::string &centre = matrix[0];
-    const size_t col = centre.size();
+    const std::string &reference = matrix[reference_index];
+    const size_t col = reference.size();
     const size_t row = matrix.size();
 
-    std::unordered_map<Mutation, std::vector<size_t>, hash> mutations;
+    std::unordered_map<mutation::Mutation, std::vector<size_t>, mutation::hash> mutations;
 
-    for (size_t i = 1; i != row; ++i) // '^'
+    for (size_t i = 0; i != row; ++i)
     {
-        const std::string &curr_sequence = matrix[i];
+        if (i == reference_index) continue;
+
+        const std::string &sequence = matrix[i];
 
         for (size_t j = 0; j != col; ++j)
-            if (centre[j] != curr_sequence[j])
-                mutations[extract_mutation(centre, curr_sequence, j)].push_back(i);
+            if (reference[j] != sequence[j])
+                mutations[extract_mutation(reference, sequence, j)].push_back(i);
     }
 
     return mutations;
@@ -34,11 +34,11 @@ std::unordered_map<Mutation, std::vector<size_t>, hash> search_in(const Fasta &i
 // assume lhs != rhs
 unsigned get_flag(char lhs, char rhs)
 {
-    if (lhs == '-') return INS;
+    if (lhs == '-') return mutation::INS;
 
-    else if (rhs == '-') return DEL;
+    else if (rhs == '-') return mutation::DEL;
 
-    return SNP;
+    return mutation::SUB;
 }
 
 // assume *lhs_first != *rhs_first
@@ -55,9 +55,9 @@ unsigned get_flag(lhs_iter lhs_first, lhs_iter lhs_last,
     return first_flag;
 }
 
-Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position)
+mutation::Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position)
 {
-    Mutation mutation;
+    mutation::Mutation mutation;
     mutation.first = position;
 
     size_t last  = position + 1;
@@ -80,8 +80,8 @@ Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t
             mutation.r.push_back(rhs[i]);
         }
 
-    mutation.l = remove_gap(mutation.l.cbegin(), mutation.l.cend());
-    mutation.r = remove_gap(mutation.r.cbegin(), mutation.r.cend());
+    mutation.l = mutation::remove_gap(mutation.l.cbegin(), mutation.l.cend());
+    mutation.r = mutation::remove_gap(mutation.r.cbegin(), mutation.r.cend());
 
     position = last - 1;
     return mutation;
@@ -104,7 +104,7 @@ bool contain_snp(const matrix_type &sequences, size_t column)
     return false;
 }
 
-size_t hash::operator()(const Mutation &mutation) const noexcept
+size_t mutation::hash::operator()(const Mutation &mutation) const noexcept
 {
     size_t hash_value = 0;
     hash_value ^= mutation.first;
@@ -122,15 +122,15 @@ std::string to_string(unsigned flag)
     static const std::string mix = "MIX";
     static const std::string ins = "INS";
     static const std::string del = "DEL";
-    static const std::string snp = "SNP";
+    static const std::string snp = "SUB";
 
-    if (flag & MIX) return mix;
-    if (flag & INS) return ins;
-    if (flag & DEL) return del;
+    if (flag & mutation::MIX) return mix;
+    if (flag & mutation::INS) return ins;
+    if (flag & mutation::DEL) return del;
     return snp;
 }
 
-bool Mutation::operator== (const Mutation &rhs) const noexcept
+bool mutation::Mutation::operator==(const Mutation &rhs) const noexcept
 {
     return first == rhs.first &&
            l     == rhs.l     &&
