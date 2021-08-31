@@ -2,18 +2,15 @@
 //
 
 #include "OutPut.hpp"
+#include "Arguments.hpp"
 
 #include <fstream>
 
 int main(int argc, const char **argv)
 {
-    if (argc != 4)
-    {
-        std::cout << argv[0] << " infile outfile auxfile\n";
-        exit(0);
-    }
+    arguments::parse_arguments(argc, argv);
 
-    std::ifstream ifs(argv[1]);
+    std::ifstream ifs(arguments::infile_name);
     if (!ifs)
     {
         std::cout << "cannot access file " << argv[1] << '\n';
@@ -22,7 +19,8 @@ int main(int argc, const char **argv)
 
     utils::Fasta infile(ifs);
     infile.transform_tolower();
+    infile.prefix_caret_to_sequences();
 
-    auto results = search_in(infile, 0);
-    output(infile, results, argv[2], argv[3]);
+    auto results = mutation::search_in(infile);
+    output(infile, results);
 }

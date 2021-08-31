@@ -1,10 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "Mutation.hpp"
 #include "Fasta.hpp"
 
-#include <string>
-#include <vector>
+void output(const utils::Fasta &infile, std::map<mutation::Mutation, std::vector<size_t>> &mutations);
 
-void output(const utils::Fasta &infile, std::unordered_map<mutation::Mutation, std::vector<size_t>, mutation::hash> &mutations,
-            const std::string &outfile_name, const std::string &autfile_name);
+bool within_the_same_line(const mutation::Mutation &lhs, const mutation::Mutation &rhs) noexcept;

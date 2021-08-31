@@ -26,6 +26,8 @@ namespace utils
 
         void transform_tolower() noexcept;
 
+        void prefix_caret_to_sequences();
+
         template<typename InputIterator>
         static void write_to(std::ostream &os, InputIterator sequence_first, InputIterator sequence_last)
         {

@@ -62,8 +62,14 @@ void utils::Fasta::cut_and_write(std::ostream &os, const std::string &sequence)
     delete[] cut_sequence;
 }
 
-void utils::Fasta::transform_tolower()
+void utils::Fasta::transform_tolower() noexcept
 {
     for (auto &sequence : sequences)
         std::transform(sequence.cbegin(), sequence.cend(), sequence.begin(), tolower);
+}
+
+void utils::Fasta::prefix_caret_to_sequences()
+{
+    for (auto &sequence : sequences)
+        sequence.insert(sequence.cbegin(), '^');
 }

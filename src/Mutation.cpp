@@ -1,138 +1,119 @@
 #include "Mutation.hpp"
 #include "Fasta.hpp"
-
-#include <algorithm>
-#include <iterator>
+#include "Arguments.hpp"
 
 using matrix_type = std::vector<std::string>;
 
-mutation::Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position);
-
-std::unordered_map<mutation::Mutation, std::vector<size_t>, mutation::hash> search_in(const utils::Fasta &infile, size_t reference_index)
+static unsigned get_flag(char lhs, char rhs)
 {
-    const matrix_type &matrix = infile.sequences;
-    const std::string &reference = matrix[reference_index];
-    const size_t col = reference.size();
-    const size_t row = matrix.size();
+    // assert lhs != rhs
 
-    std::unordered_map<mutation::Mutation, std::vector<size_t>, mutation::hash> mutations;
-
-    for (size_t i = 0; i != row; ++i)
-    {
-        if (i == reference_index) continue;
-
-        const std::string &sequence = matrix[i];
-
-        for (size_t j = 0; j != col; ++j)
-            if (reference[j] != sequence[j])
-                mutations[extract_mutation(reference, sequence, j)].push_back(i);
-    }
-
-    return mutations;
+    if (lhs == '-')
+        return mutation::INS;
+    else if (rhs == '-')
+        return mutation::DEL;
+    else
+        return mutation::SUB;
 }
 
-// assume lhs != rhs
-unsigned get_flag(char lhs, char rhs)
-{
-    if (lhs == '-') return mutation::INS;
-
-    else if (rhs == '-') return mutation::DEL;
-
-    return mutation::SUB;
-}
-
-// assume *lhs_first != *rhs_first
 template<typename lhs_iter, typename rhs_iter>
-unsigned get_flag(lhs_iter lhs_first, lhs_iter lhs_last,
-                  rhs_iter rhs_first)
+static unsigned get_flag(lhs_iter lhs_first, lhs_iter lhs_last, rhs_iter rhs_first)
 {
-    unsigned first_flag = get_flag(*lhs_first, *rhs_first);
+    // assert *lhs_first != *rhs_first
 
+    const unsigned flag = get_flag(*lhs_first++, *rhs_first++);
     for (; lhs_first != lhs_last; ++lhs_first, ++rhs_first)
-        if (*lhs_first != *rhs_first && get_flag(*lhs_first, *rhs_first) != first_flag)
-            return MIX;
+        if (*lhs_first != *rhs_first && flag != get_flag(*lhs_first, *rhs_first))
+            return mutation::REP;
 
-    return first_flag;
+    return flag;
 }
 
 mutation::Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position)
 {
+    // assert lhs.size() == rhs.size()
+    // assert postition < lhs.size()
+    // assert lhs[position] != rhs[position]
+
     mutation::Mutation mutation;
     mutation.first = position;
 
-    size_t last  = position + 1;
-    while (last != lhs.size() &&
-           (lhs[last] != rhs[last] || lhs[last] == '-' && rhs[last] == '-'))
-        ++last;
+    for (++position; position != lhs.size() && (lhs[position] != rhs[position] || lhs[position] == '-'); ++position) ;
 
-    while (lhs[last] == '-' && rhs[last] == '-') --last;
+    // position will never reach 0 in this loop
+    while (lhs[position - 1] == '-' && rhs[position - 1] == '-')
+        --position;
 
-    mutation.flag = get_flag(lhs.cbegin() + mutation.first, lhs.cbegin() + last,
-                             rhs.cbegin() + mutation.first);
+    mutation.variation_type = get_flag(lhs.cbegin() + mutation.first, lhs.cbegin() + position, rhs.cbegin() + mutation.first);
 
-    while (lhs[mutation.first] == '-' || rhs[mutation.first] == '-')
-        --mutation.first;
+    if (mutation.variation_type != mutation::SUB)
+        for (--mutation.first; lhs[mutation.first] == '-'; --mutation.first) ;
 
-    for (size_t i = mutation.first; i != last; ++i)
-        if (lhs[i] != '-' || rhs[i] != '-')
-        {
-            mutation.l.push_back(lhs[i]);
-            mutation.r.push_back(rhs[i]);
-        }
+    for (size_t i = mutation.first; i != position; ++i)
+        if (rhs[i] != '-') mutation.counterpart.push_back(rhs[i]);
 
-    mutation.l = mutation::remove_gap(mutation.l.cbegin(), mutation.l.cend());
-    mutation.r = mutation::remove_gap(mutation.r.cbegin(), mutation.r.cend());
+    mutation.last = position;
+    for (; lhs[mutation.last - 1] == '-'; --mutation.last) ;
 
-    position = last - 1;
     return mutation;
 }
 
-bool contain_del(const matrix_type &sequences, size_t column)
+std::map<mutation::Mutation, std::vector<size_t>> mutation::search_in(const utils::Fasta &infile)
 {
-    for (size_t i = 1; i != sequences.size(); ++i)
-        if (sequences[i][column] == '-') return true;
+    const std::string &reference = infile.sequences[arguments::reference_index];
+    const size_t col = reference.size();
+    const size_t row = infile.sequences.size();
 
-    return false;
-}
+    std::map<mutation::Mutation, std::vector<size_t>> mutations;
+    for (size_t i = 0; i != row; ++i)
+        if (infile.sequences[i].size() == col)
+            for (size_t j = 0; j != col; )
+                if (reference[j] != infile.sequences[i][j])
+                    mutations[extract_mutation(reference, infile.sequences[i], j)].push_back(i);
+                else
+                    ++j;
 
-bool contain_snp(const matrix_type &sequences, size_t column)
-{
-    const char c = sequences[0][column];
-    for (size_t i = 1; i != sequences.size(); ++i)
-        if (sequences[i][column] != c) return true;
-
-    return false;
+    return mutations;
 }
 
 size_t mutation::hash::operator()(const Mutation &mutation) const noexcept
 {
-    size_t hash_value = 0;
-    hash_value ^= mutation.first;
-    hash_value ^= mutation.flag;
+    static constexpr std::hash<size_t> int_hash;
+    static constexpr std::hash<std::string> string_hash;
 
-    std::hash<std::string> hash;
-    hash_value ^= hash(mutation.l);
-    hash_value ^= hash(mutation.r);
+    size_t hash_value = 0;
+
+    // ...
 
     return hash_value;
 }
 
-std::string to_string(unsigned flag)
+bool mutation::Mutation::operator<(const Mutation &rhs) const noexcept
 {
-    static const std::string mix = "MIX";
-    static const std::string ins = "INS";
-    static const std::string del = "DEL";
-    static const std::string snp = "SUB";
+    if (first != rhs.first) return first < rhs.first;
 
-    if (flag & mutation::MIX) return mix;
-    if (flag & mutation::INS) return ins;
-    if (flag & mutation::DEL) return del;
-    return snp;
+    if (variation_type != rhs.variation_type) return variation_type < rhs.variation_type;
+
+    if (last != rhs.last) return last < rhs.last;
+
+    return counterpart < rhs.counterpart;
 }
 
-bool mutation::Mutation::operator==(const Mutation &rhs) const noexcept
+std::string mutation::to_string(unsigned flag)
 {
-    return first == rhs.first &&
-           l     == rhs.l     &&
-           r     == rhs.r;
+    static const std::string rep = "REP";
+    static const std::string ins = "INS";
+    static const std::string del = "DEL";
+    static const std::string sub = "SUB";
+
+    switch (flag)
+    {
+    case mutation::SUB: return sub;
+    case mutation::DEL: return del;
+    case mutation::INS: return ins;
+    case mutation::REP: return rep;
+
+    default:
+        throw std::logic_error("unexpected variation type");
+    }
 }
