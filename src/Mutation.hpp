@@ -1,42 +1,67 @@
 #pragma once
 
-#include "Fasta.hpp"
-
-#include <string>
-#include <vector>
 #include <map>
 
-namespace mutation
+#include "Fasta.hpp"
+#include "MultipleAlignmentFormat.hpp"
+
+namespace mut
 {
 
     enum flag_enum : unsigned
     {
-        SUB = 1u << 0,
-        DEL = 1u << 1,
-        INS = 1u << 2,
-        REP = 1u << 3
+        SUB = 0,
+        DEL = 1,
+        INS = 2,
+        REP = 3
     };
 
     struct Mutation
     {
+        // ******* important members *******
+
         unsigned variation_type;
-        size_t first; // indexes the first character of the ref field
-        size_t last;  // indexes the character past the last character of the ref field
-        std::string counterpart;
 
-        bool operator<(const Mutation &rhs) const noexcept;
+        // zero-based indexes of the source of the reference sequence
+        unsigned first, last;
+
+        std::string counterpart_segment;
+
+
+        // ******* unimportant members *******
+
+        // determined by first and last, logged only for convenience
+        std::string reference_segment;
+
+        // makes sense if variation_type is not SUB
+        // true if there is an anchor before the mutation
+        bool front_anchored;
+
+        bool operator<(Mutation const &rhs) const noexcept;
     };
 
-    // std::ostream &operator <<(std::ostream &os, const Mutation &m);
-
-    class hash
+    struct WhereAbout
     {
-    public:
-        size_t operator()(const Mutation &mutation) const noexcept;
+        unsigned record;
+        unsigned sequence;
+
+        WhereAbout() = default;
+        WhereAbout(unsigned which_record, unsigned which_sequence);
     };
 
-    std::map<Mutation, std::vector<size_t>> search_in(const utils::Fasta &infile);
+    using MutationContainer = std::map<Mutation, std::vector<WhereAbout>>;
 
-    std::string to_string(unsigned flag);
+    // std::ostream &operator<<(std::ostream &os, Mutation const &m);
+
+    void extract_mutation(MutationContainer &mutations, std::vector<std::string> const &sequences, unsigned reference_index, unsigned counterpart_index, unsigned &position);
+    MutationContainer search_in(utils::MultipleAlignmentFormat const &infile, unsigned reference_index);
+    MutationContainer search_in(std::vector<std::string> const &sequences, unsigned reference_index);
+
+    template<typename lhs_iter, typename rhs_iter>
+    unsigned deduce_variation_type(lhs_iter lhs_first, lhs_iter lhs_last, rhs_iter rhs_first) noexcept;
+    unsigned deduce_variation_type(char lhs, char rhs) noexcept;
+
+    char constexpr abbreviated_mutation_types[4][4] = { "SUB", "DEL", "INS", "REP" };
+    std::string const mutation_types[4] = { "substitution", "deletion", "insertion", "replace" };
 
 }

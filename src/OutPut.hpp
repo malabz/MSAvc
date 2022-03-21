@@ -4,7 +4,9 @@
 
 #include "Mutation.hpp"
 #include "Fasta.hpp"
+#include "MultipleAlignmentFormat.hpp"
 
-void output(const utils::Fasta &infile, std::map<mutation::Mutation, std::vector<size_t>> &mutations);
+void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer const &mutations);
 
-bool within_the_same_line(const mutation::Mutation &lhs, const mutation::Mutation &rhs) noexcept;
+// 0-based [begin, end)
+void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned begin, unsigned end);

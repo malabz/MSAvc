@@ -1,119 +1,196 @@
+#include <iostream>
+
 #include "Mutation.hpp"
-#include "Fasta.hpp"
-#include "Arguments.hpp"
 
-using matrix_type = std::vector<std::string>;
-
-static unsigned get_flag(char lhs, char rhs)
+mut::MutationContainer mut::search_in(std::vector<std::string> const &sequences, unsigned reference_index)
 {
-    // assert lhs != rhs
+    MutationContainer mutations;
 
-    if (lhs == '-')
-        return mutation::INS;
-    else if (rhs == '-')
-        return mutation::DEL;
-    else
-        return mutation::SUB;
-}
+    std::string const &reference = sequences[reference_index];
+    unsigned const col = reference.size();
+    unsigned const row = sequences.size();
 
-template<typename lhs_iter, typename rhs_iter>
-static unsigned get_flag(lhs_iter lhs_first, lhs_iter lhs_last, rhs_iter rhs_first)
-{
-    // assert *lhs_first != *rhs_first
+    for (unsigned i = 0; i != row; ++i)
+    {
+        if (i == reference_index)
+            continue;
 
-    const unsigned flag = get_flag(*lhs_first++, *rhs_first++);
-    for (; lhs_first != lhs_last; ++lhs_first, ++rhs_first)
-        if (*lhs_first != *rhs_first && flag != get_flag(*lhs_first, *rhs_first))
-            return mutation::REP;
-
-    return flag;
-}
-
-mutation::Mutation extract_mutation(const std::string &lhs, const std::string &rhs, size_t &position)
-{
-    // assert lhs.size() == rhs.size()
-    // assert postition < lhs.size()
-    // assert lhs[position] != rhs[position]
-
-    mutation::Mutation mutation;
-    mutation.first = position;
-
-    for (++position; position != lhs.size() && (lhs[position] != rhs[position] || lhs[position] == '-'); ++position) ;
-
-    // position will never reach 0 in this loop
-    while (lhs[position - 1] == '-' && rhs[position - 1] == '-')
-        --position;
-
-    mutation.variation_type = get_flag(lhs.cbegin() + mutation.first, lhs.cbegin() + position, rhs.cbegin() + mutation.first);
-
-    if (mutation.variation_type != mutation::SUB)
-        for (--mutation.first; lhs[mutation.first] == '-'; --mutation.first) ;
-
-    for (size_t i = mutation.first; i != position; ++i)
-        if (rhs[i] != '-') mutation.counterpart.push_back(rhs[i]);
-
-    mutation.last = position;
-    for (; lhs[mutation.last - 1] == '-'; --mutation.last) ;
-
-    return mutation;
-}
-
-std::map<mutation::Mutation, std::vector<size_t>> mutation::search_in(const utils::Fasta &infile)
-{
-    const std::string &reference = infile.sequences[arguments::reference_index];
-    const size_t col = reference.size();
-    const size_t row = infile.sequences.size();
-
-    std::map<mutation::Mutation, std::vector<size_t>> mutations;
-    for (size_t i = 0; i != row; ++i)
-        if (infile.sequences[i].size() == col)
-            for (size_t j = 0; j != col; )
-                if (reference[j] != infile.sequences[i][j])
-                    mutations[extract_mutation(reference, infile.sequences[i], j)].push_back(i);
-                else
-                    ++j;
+        for (unsigned j = 0; j != col; )
+            if (reference[j] != sequences[i][j])
+                extract_mutation(mutations, sequences, reference_index, i, j);
+            else
+                ++j;
+    }
 
     return mutations;
 }
 
-size_t mutation::hash::operator()(const Mutation &mutation) const noexcept
+mut::MutationContainer mut::search_in(utils::MultipleAlignmentFormat const &infile, unsigned reference_index)
 {
-    static constexpr std::hash<size_t> int_hash;
-    static constexpr std::hash<std::string> string_hash;
+    MutationContainer mutations;
 
-    size_t hash_value = 0;
-
-    // ...
-
-    return hash_value;
-}
-
-bool mutation::Mutation::operator<(const Mutation &rhs) const noexcept
-{
-    if (first != rhs.first) return first < rhs.first;
-
-    if (variation_type != rhs.variation_type) return variation_type < rhs.variation_type;
-
-    if (last != rhs.last) return last < rhs.last;
-
-    return counterpart < rhs.counterpart;
-}
-
-std::string mutation::to_string(unsigned flag)
-{
-    static const std::string rep = "REP";
-    static const std::string ins = "INS";
-    static const std::string del = "DEL";
-    static const std::string sub = "SUB";
-
-    switch (flag)
+    for (unsigned i = 0; i != infile.records.size(); ++i)
     {
-    case mutation::SUB: return sub;
-    case mutation::DEL: return del;
-    case mutation::INS: return ins;
-    case mutation::REP: return rep;
+        auto const &record = infile.records[i];
+        unsigned const row = record.sequences.size();
 
-    default:
-        throw std::logic_error("unexpected variation type");
+        unsigned const reference_index_in_this_record = record.where_is(reference_index);
+        if (reference_index_in_this_record == row) // one record might not contain the reference sequence
+            continue;
+
+        std::string const &reference = record.sequences[reference_index_in_this_record];
+        unsigned const col = reference.size();
+
+        auto const &map_to_source_site = record.map_to_source_site;
+
+        MutationContainer const raw_mutations = search_in(record.sequences, reference_index_in_this_record);
+        unsigned const offset = record.begins[reference_index_in_this_record];
+
+        for (auto const &raw_mutation : raw_mutations)
+        {
+            auto mutation = raw_mutation.first;
+
+            // assert reference[mutation.first] != '-'
+            mutation.first = map_to_source_site[mutation.first] + offset;
+
+            for (; mutation.last != col && reference[mutation.last] == '-'; ++mutation.last)
+                ;
+            mutation.last = map_to_source_site[mutation.last] + offset;
+
+            auto &positions = mutations[std::move(mutation)];
+            for (auto const raw_where : raw_mutation.second)
+                positions.emplace_back(i, raw_where.sequence);
+        }
     }
+
+    return mutations;
+}
+
+unsigned mut::deduce_variation_type(char lhs, char rhs) noexcept
+{
+    // assert lhs != rhs
+
+    if (lhs == '-')
+        return INS;
+    else if (rhs == '-')
+        return DEL;
+    else
+        return SUB;
+}
+
+template<typename lhs_iter, typename rhs_iter>
+unsigned mut::deduce_variation_type(lhs_iter lhs_first, lhs_iter lhs_last, rhs_iter rhs_first) noexcept
+{
+    // assert *lhs_first != *rhs_first
+    unsigned const flag = deduce_variation_type(*lhs_first++, *rhs_first++);
+
+    for (; lhs_first != lhs_last; ++lhs_first, ++rhs_first)
+        // if *lhs_first == *rhs_first
+        //     assert *lhs_first == '-'
+        if (*lhs_first != *rhs_first && flag != deduce_variation_type(*lhs_first, *rhs_first))
+            return REP;
+
+    return flag;
+}
+
+void mut::extract_mutation(mut::MutationContainer &mutations, std::vector<std::string> const &sequences, unsigned reference_index, unsigned which_sequence, unsigned &position)
+{
+    // assert postition < until
+    // assert reference_index < sequences.size()
+    // assert which_sequence < sequences.size()
+
+    std::string const &lhs = sequences[reference_index];
+    std::string const &rhs = sequences[which_sequence];
+    // assert lhs.size() == rhs.size()
+    // assert lhs[position] != rhs[position]
+
+    Mutation mutation;
+    mutation.first = position;
+
+    // str[str.size()] returns charT() since c++11
+    // position will end no after than lhs.size()
+    for (++position; lhs[position] != rhs[position] || lhs[position] == '-'; ++position)
+        ;
+
+    mutation.last = position;
+
+    // position is anchored here, i.e., the next site pending check
+    if (position != lhs.size())
+        ++position;
+
+    // step back while the end is double '-'
+    // mutation.last will never reach 0 in this loop because of the caret prefix
+    while (lhs[mutation.last - 1] == '-' && rhs[mutation.last - 1] == '-')
+        --mutation.last;
+
+    mutation.variation_type = deduce_variation_type(lhs.cbegin() + mutation.first, lhs.cbegin() + mutation.last, rhs.cbegin() + mutation.first);
+
+    // step back first if the variation type is not substitution
+    // while making sure that reference[mutation.first] is not '-'
+    if (mutation.variation_type != SUB)
+        // assert lhs[mutation.first - 1] == rhs[mutation.first - 1]
+        for (--mutation.first; lhs[mutation.first] == '-'; --mutation.first)
+            ;
+    // assert lhs[mutation.first] == rhs[mutation.first]
+
+    for (unsigned i = mutation.first; i != mutation.last; ++i)
+    {
+        if (lhs[i] != '-') mutation.reference_segment.push_back(lhs[i]);
+        if (rhs[i] != '-') mutation.counterpart_segment.push_back(rhs[i]);
+    }
+
+    if (mutation.reference_segment.size() == 1 && mutation.reference_segment[0] == '^'
+        || mutation.counterpart_segment.size() == 1 && mutation.counterpart_segment[0] == '^')
+    {
+        unsigned i = mutation.last;
+        while (lhs[i] == '-') ++i;
+        if (lhs[i] == '\0')
+        {
+            std::cerr << "cannot process the condition where no aligned nucleotides are the same\n";
+            exit(0);
+        }
+        mutation.reference_segment.push_back(lhs[i]);
+        mutation.counterpart_segment.push_back(lhs[i]);
+        mutation.front_anchored = false;
+    }
+    else
+    {
+        mutation.front_anchored = true;
+    }
+
+    // .record will be valued in the calling function
+    mutations[std::move(mutation)].emplace_back().sequence = which_sequence;
+}
+
+bool mut::Mutation::operator<(const Mutation &rhs) const noexcept
+{
+    if (first != rhs.first)
+        return first < rhs.first;
+
+    if (variation_type != rhs.variation_type)
+        return variation_type < rhs.variation_type;
+
+    if (last != rhs.last)
+        return last < rhs.last;
+
+    return counterpart_segment < rhs.counterpart_segment;
+}
+
+static void helper_intersection_of(unsigned ll, unsigned lr, unsigned rl, unsigned rr, unsigned &l, unsigned &r) noexcept
+{
+    // assert ll <= rl
+    if (rl < lr) { l = rl; r = std::min(lr, rr); }
+    else { l = r = 0; }
+}
+
+static void intersection_of(unsigned ll, unsigned lr, unsigned rl, unsigned rr, unsigned &l, unsigned &r) noexcept
+{
+    if (ll > rl) helper_intersection_of(rl, rr, ll, lr, l, r);
+    else helper_intersection_of(ll, lr, rl, rr, l, r);
+}
+
+mut::WhereAbout::WhereAbout(unsigned which_record, unsigned which_sequence)
+    : record(which_record)
+    , sequence(which_sequence)
+{
 }

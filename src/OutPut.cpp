@@ -1,180 +1,329 @@
-#include "Arguments.hpp"
-#include "OutPut.hpp"
-
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <iterator>
 #include <cstring>
 #include <sstream>
 
-using mutation_and_occurrences_iterator = std::map<mutation::Mutation, std::vector<size_t>>::const_iterator;
-using string_iterator = std::string::const_iterator;
+#include "Arguments.hpp"
+#include "OutPut.hpp"
 
-static void output_dot_if_empty(std::ostream &os, string_iterator first, string_iterator last)
+static void output_dot_if_empty(std::ostream &os, char const *str)
 {
-    if (*first == '^')
-        ++first;
+    // assert *str != '\0'
 
-    if (first == last)
-        os << '.';
-    else
-        for (; first != last; ++first)
-            os << *first;
+    if (*str == '^')
+        ++str;
+
+    // if (*str == '\0')
+    //     os << '.';
+    // else
+        os << str;
 }
 
-static void output_reference(std::ostream &os, string_iterator first, string_iterator last)
-{
-    if (*first == '^')
-        ++first;
-
-    if (first == last)
-        os << '.';
-    else
-        for (; first != last; ++first)
-            if (*first != '-')
-                os << *first;
-}
+using mutation_and_occurrences_iterator = mut::MutationContainer::const_iterator;
 
 static void output_alterations(std::ostream &os, mutation_and_occurrences_iterator first, mutation_and_occurrences_iterator last)
 {
-    output_dot_if_empty(os, first->first.counterpart.cbegin(), first->first.counterpart.cend());
-
-    for (++first; first != last; ++first)
+    for (bool head = true; first != last; ++first)
     {
-        os << ',';
-        output_dot_if_empty(os, first->first.counterpart.cbegin(), first->first.counterpart.cend());
+        if (first->second.size() < arguments::minimum_alternative_allele_count_acceptable)
+            continue;
+
+        if (head == false) os << ',';
+
+        output_dot_if_empty(os, first->first.counterpart_segment.data());
+        head = false;
     }
 }
 
-static size_t compute_variation_length(const mutation::Mutation &m, const std::string &lhs)
+static void output_info(std::ostream &os, mutation_and_occurrences_iterator first, mutation_and_occurrences_iterator last, unsigned variation_length)
 {
-    size_t ref_length;
-    size_t alt_length;
+    os << "\tAC=";
 
-    switch (m.variation_type)
+    bool head = true;
+    for (auto i = first; i != last; ++i)
     {
-    case mutation::SUB:
-        return m.last - m.first;
+        if (i->second.size() < arguments::minimum_alternative_allele_count_acceptable)
+            continue;
 
-    case mutation::DEL:
-        return m.last - m.first - 1;
+        if (head == false) os << ',';
 
-    case mutation::INS:
-        return m.counterpart.size() - 1;
+        os << i->second.size();
+        head = false;
+    }
+
+    os << ";VT=" << mut::abbreviated_mutation_types[first->first.variation_type] << ";VLEN=" << variation_length;
+}
+
+static unsigned calculate_variation_length(mut::Mutation const &mutation)
+{
+    // unsigned ref_length, alt_length;
+
+    switch (mutation.variation_type)
+    {
+    case mut::SUB:
+        return mutation.last - mutation.first;
+
+    case mut::DEL:
+        if (mutation.front_anchored)
+            return mutation.reference_segment.size() - 1;
+        else
+            return mutation.reference_segment.size() - 2;
+
+    case mut::INS:
+        if (mutation.front_anchored)
+            return mutation.counterpart_segment.size() - 1;
+        else
+            return mutation.counterpart_segment.size() - 2;
 
     // the max length of ref and alt excluding the prefixing character
-    case mutation::REP:
-        ref_length = 0;
-        for (size_t i = m.first + 1; i != m.last; ++i)
-            if (lhs[i] != '-') ++ref_length;
-
-        alt_length = m.counterpart.size() - 1;
-
-        return std::max(ref_length, alt_length);
-        break;
+    case mut::REP:
+        if (mutation.front_anchored)
+            return std::max(mutation.reference_segment.size() - 1, mutation.counterpart_segment.size() - 1);
+        else
+            return std::max(mutation.reference_segment.size() - 2, mutation.counterpart_segment.size() - 2);
 
     default:
         throw std::logic_error("unexpected variation_type");
         break;
     }
-
-    return 0;
 }
 
-static void output_info(std::ostream &os, mutation_and_occurrences_iterator first, mutation_and_occurrences_iterator last, size_t variation_length)
+static unsigned get_pos(mut::Mutation const &mutation) noexcept
 {
-    const mutation::Mutation &current_mutation = first->first;
-
-    size_t count = 0;
-    for (auto i = first; i != last; ++i) count += i->second.size();
-
-    os << "AC=" << count
-       << ";VT=" << mutation::to_string(first->first.variation_type)
-       << ";VELN=" << variation_length
-          ;
-}
-
-void output(const utils::Fasta &infile, std::map<mutation::Mutation, std::vector<size_t>> &mutations)
-{
-    const std::string &reference = infile.sequences[arguments::reference_index];
-    const std::string &reference_identifier = infile.identifications[arguments::reference_index];
-    const size_t col = reference.size();
-    const size_t row = infile.sequences.size();
-
-    bool *does_the_sequence_contain_mutations = new bool[row]();
-    for (const auto &mutation : mutations)
-        for (auto sequence_index : mutation.second)
-            does_the_sequence_contain_mutations[sequence_index] = true;
-    const unsigned mutated_sequence_number = std::count(does_the_sequence_contain_mutations, does_the_sequence_contain_mutations + row, true);
-
-    size_t *map_to_ref_site = new size_t[col];
-    for (size_t i = 0, index = 0; i != col; ++i)
-        if (reference[i] != '-') map_to_ref_site[i] = index++;
-
-    size_t *map_to_mutated_sequence = new size_t[row];
-    for (size_t i = 0, index = 0; i != row; ++i)
-        if (does_the_sequence_contain_mutations[i]) map_to_mutated_sequence[i] = index++;
-
-    std::ofstream ofs(arguments::outfile_name);
-    if (!ofs) { std::cerr << "cannot open " << arguments::outfile_name << '\n'; exit(0); }
-
-    static constexpr char *const header = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t";
-
-    ofs << header << reference_identifier;
-    for (size_t i = 0; i != row; ++i)
-        if (i != arguments::reference_index) ofs << '\t' << infile.identifications[i];
-
-    unsigned *current_mutated_sequence_mark = new unsigned[row];
-    for (auto i = mutations.cbegin(), j = i; i != mutations.cend(); i = j)
+    unsigned const pos = mutation.first;
+    switch (mutation.variation_type)
     {
-        for (++j; j != mutations.cend(); ++j)
-            if (within_the_same_line(i->first, j->first) == false) break;
-        const size_t count_of_mutations_of_this_line = std::distance(i, j);
+    case mut::SUB:
+    case mut::INS:
+        return pos;
 
-        const auto &first_mutation = i->first;
-
-        ofs << reference_identifier
-            << '\t' << map_to_ref_site[first_mutation.first]
-            << "\t."
-               "\t"; output_reference(ofs, reference.cbegin() + first_mutation.first, reference.cbegin() + first_mutation.last);
-        ofs << '\t'; output_alterations(ofs, i, j);
-        ofs << "\t."
-               "\t."
-               "\t"; output_info(ofs, i, j, compute_variation_length(first_mutation, reference));
-        ofs << "\tGT"
-               "\t0"
-            ;
-
-        memset(current_mutated_sequence_mark, 0, sizeof(unsigned) * row);
-        for (auto k = i; k != j; ++k)
-        {
-            const size_t current_alteration_number = std::distance(i, k) + 1;
-            for (const auto occurrence : k->second)
-                current_mutated_sequence_mark[occurrence] = current_alteration_number;
-        }
-
-        for (size_t k = 0; k != row; ++k)
-            if (k != arguments::reference_index)
-                ofs << '\t' << current_mutated_sequence_mark[k];
-        ofs << '\n';
-
-        // ofs_aux << first_mutation.first << "p;";
-        // for (size_t i = 0; i != occurrence.size(); ++i)
-        //     ofs_aux << occurrence[i] + 1 << "p;";
-        // ofs_aux << '\n';
+    default:
+        if (mutation.reference_segment.front() == '^')
+            return pos + 1;
+        return pos;
     }
-
-    delete[] map_to_mutated_sequence;
-    delete[] map_to_ref_site;
-    delete[] current_mutated_sequence_mark;
-    delete[] does_the_sequence_contain_mutations;
 }
 
-bool within_the_same_line(const mutation::Mutation &lhs, const mutation::Mutation &rhs) noexcept
+static bool within_the_same_line(mut::Mutation const &lhs, mut::Mutation const &rhs) noexcept
 {
-    return lhs.variation_type == mutation::SUB
-            && rhs.variation_type == mutation::SUB
+    return arguments::combine_like_substitutions == false
+            && lhs.variation_type == mut::SUB
+            && rhs.variation_type == mut::SUB
             && lhs.first == rhs.first
             && lhs.last == rhs.last
             ;
 }
+
+void output_file_head(std::ofstream &ofs, utils::MultipleAlignmentFormat const &infile)
+{
+    ofs <<   "##fileformat=VCFv4.1"
+        << "\n##contig=<ID=" << arguments::reference_name << ",length=" << infile.lengths[arguments::reference_index]
+        << "\n##INFO=<ID=AC,Number=A,Type=Integer,Description=\"Alternate allele count, for each ALT allele, in the same order as listed\">"
+           "\n##INFO=<ID=VT,Number=1,Type=String,Description=\"Type of small variant\">"
+           "\n##INFO=<ID=VLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">"
+           "\n##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">"
+    ;
+}
+
+void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer const &mutations)
+{
+    std::ofstream ofs(arguments::outfile_path);
+    if (!ofs) { std::cerr << "cannot open " << arguments::outfile_path << '\n'; exit(0); }
+
+    auto const &names = maf.names;
+    unsigned const n = names.size();
+
+    output_file_head(ofs, maf);
+    ofs << "\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT";
+    if (arguments::genotype_matrix)
+    {
+        ofs << '\t' << arguments::reference_name;
+        for (unsigned i = 0; i != arguments::reference_index; ++i) ofs << '\t' << names[i];
+        for (unsigned i = arguments::reference_index + 1; i != n; ++i) ofs << '\t' << names[i];
+    }
+    ofs << '\n';
+
+    // used only for arguments::matrix
+    std::vector<unsigned> alteration_numbers;
+    static constexpr unsigned not_visited = std::numeric_limits<unsigned>::max();
+
+    static constexpr auto acceptable = [](mut::MutationContainer::value_type const &i) -> bool
+            { return i.second.size() >= arguments::minimum_alternative_allele_count_acceptable; };
+
+    for (auto i = mutations.cbegin(), j = i; i != mutations.cend(); i = j)
+    {
+        for (++j; j != mutations.cend(); ++j)
+            if (within_the_same_line(i->first, j->first) == false)
+                break;
+
+        auto const &mutation_delegate = i->first;
+
+        if (arguments::variation_type_acceptable[mutation_delegate.variation_type] == false)
+            continue;
+
+        if (mutation_delegate.first < arguments::lpos || mutation_delegate.first >= arguments::rpos)
+            continue;
+
+        unsigned const variation_length = calculate_variation_length(mutation_delegate);
+        if (variation_length < arguments::minimum_variation_length_acceptable)
+            continue;
+
+        if (std::count_if(i, j, acceptable) == 0)
+            continue;
+
+        ofs << arguments::reference_name;
+        ofs << '\t' << get_pos(mutation_delegate);
+        ofs << "\t."
+               "\t"; output_dot_if_empty(ofs, mutation_delegate.reference_segment.data());
+        ofs << '\t'; output_alterations(ofs, i, j);
+        ofs << "\t."
+               "\t.";
+        output_info(ofs, i, j, variation_length);
+        ofs << "\tGT";
+
+        if (arguments::genotype_matrix)
+        {
+            alteration_numbers.clear();
+            alteration_numbers.resize(n, not_visited);
+
+            // assumes that where.record is the same in the mutation
+            unsigned const which_record = i->second.front().record;
+            utils::Record const &record = maf.records[which_record];
+
+            unsigned cnt = 0;
+            for (auto k = i; k != j; ++k)
+            {
+                if (k->second.size() < arguments::minimum_alternative_allele_count_acceptable)
+                    continue;
+
+                ++cnt;
+                for (auto const where : k->second)
+                    alteration_numbers[record.belongs[where.sequence]] = cnt;
+            }
+
+            unsigned const reference_index_in_this_record = record.where_is(arguments::reference_index);
+            std::string const &reference = record.sequences[reference_index_in_this_record];
+            unsigned const reference_offset = record.begins[reference_index_in_this_record];
+
+            unsigned l, r;
+            if (mutation_delegate.first == reference_offset)
+            {
+                l = record.map_from_source_site[1];
+                for (auto const [_, which_sequence] : i->second)
+                {
+                    unsigned candidate = 1;
+                    for (; reference[candidate] == record.sequences[which_sequence][candidate]; ++candidate) ;
+                    if (l > candidate) l = candidate;
+                }
+
+                if (mutation_delegate.last == record.map_to_source_site.back() + reference_offset)
+                    r = record.map_from_source_site[mutation_delegate.last - reference_offset];
+                    // equals to:
+                    // r = reference.size();
+                else
+                    r = record.map_from_source_site[mutation_delegate.last - reference_offset + 1];
+            }
+            else
+            {
+                l = record.map_from_source_site[mutation_delegate.first - reference_offset];
+                r = record.map_from_source_site[mutation_delegate.last - reference_offset];
+
+                for (auto const [_, which_sequence] : i->second)
+                {
+                    unsigned candidate = record.map_from_source_site[mutation_delegate.last - reference_offset];
+                    for (; reference[candidate - 1] == record.sequences[which_sequence][candidate - 1]; --candidate) ;
+                    if (r > candidate) r = candidate;
+                }
+            }
+
+            for (unsigned index_based_on_record = 0; index_based_on_record != record.sequences.size(); ++index_based_on_record)
+            {
+                unsigned const index_of_current_sequence = record.belongs[index_based_on_record];
+                if (alteration_numbers[index_of_current_sequence] != not_visited)
+                    continue;
+
+                alteration_numbers[index_of_current_sequence] = 0;
+                if (memcmp(record.sequences[index_based_on_record].data() + l, reference.data() + l, r - l))
+                    alteration_numbers[index_of_current_sequence] = not_visited;
+            }
+
+            ofs << "\t0";
+            for (unsigned k = 0; k != n; ++k)
+                if (k != arguments::reference_index)
+                {
+                    ofs << '\t';
+                    if (alteration_numbers[k] == not_visited)
+                        ofs << '.';
+                    else
+                        ofs << alteration_numbers[k];
+                }
+        }
+
+        ofs << '\n';
+    }
+}
+
+// 0-based [begin, end)
+void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned begin, unsigned end)
+{
+    // assert begin < end
+    --begin;
+    --end;
+
+    for (auto const &record : infile.records)
+    {
+        unsigned const reference_index_of_record = record.where_is(arguments::reference_index);
+        if (reference_index_of_record == record.sequences.size())
+            continue;
+
+        std::string const &reference = record.sequences[reference_index_of_record];
+        unsigned const reference_offset = record.begins[reference_index_of_record];
+        if (!(begin >= reference_offset && end <= reference_offset + record.map_to_source_site.back()))
+            continue;
+
+        unsigned const l = record.map_from_source_site[begin - reference_offset] + 1;
+        unsigned const r = record.map_from_source_site[end - reference_offset] + 1;
+
+        utils::Fasta fasta;
+        fasta.names = infile.names;
+        fasta.sequences.reserve(record.sequences.size());
+        for (auto const &sequence : record.sequences)
+            fasta.sequences.push_back(sequence.substr(l, r - l));
+
+        std::ofstream ofs(arguments::sub_block_outfile_path);
+        if (!ofs) { std::cerr << "cannot open " << arguments::outfile_path << '\n'; return; }
+        fasta.write_to(ofs);
+
+        return;
+    }
+
+    std::cerr << "error found when output subblock\n";
+}
+
+/**
+ * deprecated
+ * 
+ * static void output_reference(std::ostream &os, std::string::const_iterator first, std::string::const_iterator last)
+ * {
+ *     if (*first == '^')
+ *         ++first;
+ * 
+ *     if (first == last)
+ *         os << '.';
+ *     else
+ *         for (; first != last; ++first)
+ *             if (*first != '-')
+ *                 os << *first;
+ * }
+ * 
+ * static unsigned calculate_alternative_allele_count(mutation_and_occurrences_iterator first, mutation_and_occurrences_iterator last) noexcept
+ * {
+ *     unsigned cnt = 0;
+ *     for (auto i = first; i != last; ++i)
+ *         cnt += i->second.size();
+ *     return cnt;
+ * }
+ * 
+ */
