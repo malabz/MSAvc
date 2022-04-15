@@ -20,8 +20,10 @@ OBJMSAVC = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
 
 # HEADER = 
 
-all : $(PROGS) 
-	@echo done.
+all : $(PROGS)
+	echo "Using patchelf change the file header. If not installed, use 'apt install patchelf' to install it."
+	patchelf --set-rpath '$$ORIGIN/../lib/' ./msavc
+	echo done.
 
 msavc : $(OBJMSAVC)
 	$(CPP) msavc.cpp -o $@ $(OBJMSAVC) $(MYCFLAGS) -L $(LIBDIR) $(LIBS)
