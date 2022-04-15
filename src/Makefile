@@ -4,7 +4,7 @@ INCLUDEDIR = $(PREFIX)/include
 LIBDIR = $(PREFIX)/lib
 DESTDIR = 
 
-CPP = g++
+CPP = clang++
 #CPP = iCPP
 CPPFLAGS = -O3
 
@@ -27,7 +27,7 @@ msavc : $(OBJMSAVC)
 	$(CPP) msavc.cpp -o $@ $(OBJMSAVC) $(MYCFLAGS) -L $(LIBDIR) $(LIBS)
 
 Arguments.o: Arguments.cpp Arguments.hpp
-	$(CPP) $(MYCFLAGS) -c Arguments.cpp -I $(INCLUDEDIR) $(LIBS)
+	$(CPP) $(MYCFLAGS) -c Arguments.cpp -I $(INCLUDEDIR)
 
 Fasta.o : Fasta.cpp Fasta.hpp
 	$(CPP) $(MYCFLAGS) -c Fasta.cpp
@@ -45,5 +45,4 @@ msavc.o: msavc.cpp OutPut.hpp Arguments.hpp
 	$(CPP) $(MYCFLAGS) -c msavc.cpp
 
 clean :
-	rm -f *.o *.a *.exe *~ $(PROGS)
-#	rm -f ../binaries/* ../scripts/*
+	rm -f *.o  *~ $(PROGS)

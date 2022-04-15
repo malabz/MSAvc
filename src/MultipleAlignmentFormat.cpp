@@ -138,7 +138,10 @@ void utils::MultipleAlignmentFormat::read(utils::Fasta &&fasta)
 
     names = std::move(fasta.names);
     for (unsigned i = 0; i != n; ++i)
+    {
         name_to_index[names[i]] = i;
+        lengths.push_back(fasta.sequences[i].size());
+    }
 
     Record &record = records.emplace_back();
     record.begins.resize(n, 0);

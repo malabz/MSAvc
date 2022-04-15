@@ -1,0 +1,53 @@
+#ENVNAME = package
+PREFIX = /Users/furongtang/anaconda3
+INCLUDEDIR = $(PREFIX)/include
+LIBDIR = $(PREFIX)/lib
+DESTDIR = 
+
+CPP = clang++
+#CPP = iCPP
+CPPFLAGS = -O3
+# -static
+
+LIBS = -lboost_program_options
+# LIBS = ../lib/libboost_program_options.dylib
+
+STDF = -std=c++2a
+
+#MACLIBS = -lstdc++
+
+MYCFLAGS =  $(STDF) $(CPPFLAGS)
+
+PROGS = msavc 
+
+OBJMSAVC = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
+
+# HEADER = 
+
+all : $(PROGS)
+	install_name_tool -change "@rpath/libboost_program_options.dylib" "@executable_path/../lib/libboost_program_options.dylib" msavc 
+	@echo done.
+
+msavc : $(OBJMSAVC)
+	$(CPP) msavc.cpp -o $@ $(OBJMSAVC) $(MYCFLAGS)  -L $(LIBDIR) $(LIBS) $(MACLIBS)
+
+Arguments.o: Arguments.cpp Arguments.hpp
+	$(CPP) $(MYCFLAGS) -c Arguments.cpp -I $(INCLUDEDIR) $(MACLIBS)
+
+Fasta.o : Fasta.cpp Fasta.hpp
+	$(CPP) $(MYCFLAGS) -c Fasta.cpp $(MACLIBS)
+
+MultipleAlignmentFormat.o : MultipleAlignmentFormat.cpp MultipleAlignmentFormat.hpp
+	$(CPP) $(MYCFLAGS) -c MultipleAlignmentFormat.cpp $(MACLIBS)
+
+Mutation.o : Mutation.cpp Mutation.hpp
+	$(CPP) $(MYCFLAGS) -c Mutation.cpp $(MACLIBS)
+
+OutPut.o : OutPut.cpp OutPut.hpp
+	$(CPP) $(MYCFLAGS) -c OutPut.cpp $(MACLIBS)
+
+msavc.o: msavc.cpp OutPut.hpp Arguments.hpp
+	$(CPP) $(MYCFLAGS) -c msavc.cpp $(MACLIBS)
+
+clean :
+	rm -f *.o *~ $(PROGS)
