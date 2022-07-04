@@ -93,17 +93,9 @@ static unsigned calculate_variation_length(mut::Mutation const &mutation)
 static unsigned get_pos(mut::Mutation const &mutation) noexcept
 {
     unsigned const pos = mutation.first;
-    switch (mutation.variation_type)
-    {
-    case mut::SUB:
-    case mut::INS:
-        return pos;
-
-    default:
-        if (mutation.reference_segment.front() == '^')
-            return pos + 1;
-        return pos;
-    }
+    if (mutation.reference_segment.front() == '^')
+		return pos + 1;
+    return pos;
 }
 
 static bool within_the_same_line(mut::Mutation const &lhs, mut::Mutation const &rhs) noexcept
@@ -163,7 +155,9 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
         if (arguments::variation_type_acceptable[mutation_delegate.variation_type] == false)
             continue;
 
-        if (mutation_delegate.first < arguments::lpos || mutation_delegate.first >= arguments::rpos)
+        if (mutation_delegate.first < arguments::lpos && !(mutation_delegate.first == 0 && arguments::lpos == 1))
+            continue;
+        if (mutation_delegate.first >= arguments::rpos)
             continue;
 
         unsigned const variation_length = calculate_variation_length(mutation_delegate);
@@ -211,12 +205,12 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
             if (mutation_delegate.first == reference_offset)
             {
                 l = record.map_from_source_site[1];
-                for (auto const [_, which_sequence] : i->second)
-                {
-                    unsigned candidate = 1;
-                    for (; reference[candidate] == record.sequences[which_sequence][candidate]; ++candidate) ;
-                    if (l > candidate) l = candidate;
-                }
+                // for (auto const [_, which_sequence] : i->second)
+                // {
+                //     unsigned candidate = 1;
+                //     for (; reference[candidate] == record.sequences[which_sequence][candidate]; ++candidate) ;
+                //     if (l > candidate) l = candidate;
+                // }
 
                 if (mutation_delegate.last == record.map_to_source_site.back() + reference_offset)
                     r = record.map_from_source_site[mutation_delegate.last - reference_offset];
@@ -228,14 +222,14 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
             else
             {
                 l = record.map_from_source_site[mutation_delegate.first - reference_offset];
-                r = record.map_from_source_site[mutation_delegate.last - reference_offset];
+                r = record.map_from_source_site[mutation_delegate.last - reference_offset - 1] + 1;
 
-                for (auto const [_, which_sequence] : i->second)
-                {
-                    unsigned candidate = record.map_from_source_site[mutation_delegate.last - reference_offset];
-                    for (; reference[candidate - 1] == record.sequences[which_sequence][candidate - 1]; --candidate) ;
-                    if (r > candidate) r = candidate;
-                }
+                // for (auto const [_, which_sequence] : i->second)
+                // {
+                //     unsigned candidate = record.map_from_source_site[mutation_delegate.last - reference_offset];
+                //     for (; reference[candidate - 1] == record.sequences[which_sequence][candidate - 1]; --candidate) ;
+                //     if (r > candidate) r = candidate;
+                // }
             }
 
             for (unsigned index_based_on_record = 0; index_based_on_record != record.sequences.size(); ++index_based_on_record)

@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.1127";
+static char constexpr version[]                                     = "v0.1.20220630";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -68,7 +68,7 @@ void arguments::deduce_subblock_file_path()
     }
 
     std::filesystem::path rhs = path.parent_path();
-    rhs.append(path.stem().string() + "_subbloack.fasta");
+    rhs.append(path.stem().string() + "_subblock.fasta");
     sub_block_outfile_path = rhs.string();
 }
 
@@ -287,9 +287,7 @@ void arguments::produce_version_message()
 
 void arguments::produce_help_message()
 {
-    std::cout << 
-        "\n"
-        "\nmsavc " << version << 
+    std::cout << "msavc " << version << 
         "\n   MSAvc: variation calling for genome-scale multiple sequence alignments"
         "\n   See https://github.com/malabz/msavc for the most up-to-date documentation."
         "\n"
@@ -297,59 +295,52 @@ void arguments::produce_help_message()
         "\n   msavc -i <inputfile> -o <outputfile> [options]"
         "\n"
         "\nOptions:"
-        "\n"
-        "\n   -i, --in <inputfile>              Specify the muti-FASTA/MAF input file"
+         "\n   -i, --in <inputfile>              Specify the muti-FASTA/MAF input file"
         "\n   -o, --out <outputfile>            Specify the output VCF file name"
         "\n"
-        "\n   -r, --reference <seqname>         Specify the reference genome during"
-        "\n                                       extracting variations (default=the"
-        "\n                                       first sequence of the input file)"
+        "\n   -r, --reference <seqname>         Specify the reference genome during extracting "
+        "\n                                     variations (default=the first sequence of the "
+        "\n                                     input file)"
         "\n"
         "\n   -g, --genotype-matrix             Output genotype matrix (default=off)"
         "\n"
-        "\n   -n, --nomerge-sub                 Don't merge the SUB variations with the"
-        "\n                                       same \"POS\" and \"REF\" into one row"
-        "\n                                       (default=off)"
+        "\n   -n, --nomerge-sub                 Don't merge the SUB variations with the same "
+        "\n                                     \"POS\" and \"REF\" into one row (default=off)"
         "\n"
-        "\n   -b, --filter-begin <integer>      The filtration of POS column by"
-        "\n                                       specifying an integer such as \"-b 24\""
-        "\n                                       in terms of reference genome, meaning"
-        "\n                                       only keep variations POS>=24"
-        "\n                                       (default=1)"
+        "\n   -b, --filter-begin <integer>      Filtration of the POS column by specifying an "
+        "\n                                     integer such as \"-b 24\" in terms of the "
+        "\n                                     reference genome, meaning only keep variations "
+        "\n                                     POS>=24 (default=1, 1-based index)"
         "\n"
-        "\n   -e, --filter-end <integer>        The filtration of POS column by"
-        "\n                                       specifying an integer such as \"-e"
-        "\n                                       1000\" in terms of reference genome,"
-        "\n                                       meaning only keep variations with POS"
-        "\n                                       <=1000 (default=last base index)"
+        "\n   -e, --filter-end <integer>        Filtration of the POS column by specifying an "
+        "\n                                     integer such as \"-e 1000\" in terms of the "
+        "\n                                     reference genome, meaning only keep variations"
+        "\n                                     with POS<=1000 (default=last base index)"
         "\n"
-        "\n   -c, --filter-ac <integer>         The filtration of AC tag in INFO column"
-        "\n                                       by specifying an integer such as \"-c"
-        "\n                                       100\", meaning only output variations"
-        "\n                                       with AC>=100 (default=0)"
+        "\n   -c, --filter-ac <integer>         Filtration of the AC tag in the INFO column by "
+        "\n                                     specifying an integer such as \"-c 100\", meaning "
+        "\n                                     only output variations with AC>=100 (default=0)"
         "\n"
-        "\n   -t, --filter-vt <variationtype>   The filtration of VT tag in INFO column"
-        "\n                                       by specifying one of sub/ins/del/rep"
-        "\n                                       (lowercase) flag such as \"-t sub\","
-        "\n                                       meaning only output the substitution"
-        "\n                                       variations (default=off)"
+        "\n   -t, --filter-vt <variationtype>   Filtration of the VT tag in the INFO column by "
+        "\n                                     specifying one of sub/ins/del/rep (lowercase) "
+        "\n                                     flags such as \"-t sub\", meaning only output the "
+        "\n                                     substitution variations (default=off)"
         "\n"
-        "\n   -l, --filter-vl <integer>         The filtration of VLEN tag in INFO"
-        "\n                                       column by specifying an integer such"
-        "\n                                       as \"-l 25\", meaning only output the"
-        "\n                                       variations with VLEN>=25bp (default=0)"
+        "\n   -l, --filter-vl <integer>         Filtration of the VLEN tag in the INFO column "
+        "\n                                     by specifying an integer such as \"-l 5\", "
+        "\n                                     meaning only output the variations with "
+        "\n                                     VLEN>=5bp (default=0)"
         "\n"
-        "\n   -s, --sub-block                   Output MSA sub-block into FASTA file"
-        "\n                                       after the filtration of POS column,"
-        "\n                                       for instance \"-b 24 -e 1000 -s\","
-        "\n                                       meaning produce a sub MSA block, the"
-        "\n                                       slice interval is 24=<POS<=1000 in"
-        "\n                                       terms of reference (default=off)"
+        "\n   -s, --sub-block                   Output MSA sub-block into FASTA file, \"-s\" "
+        "\n                                     option works only when \"-b\" and \"-e\" are both "
+        "\n                                     specified, for instance \"-b 24 -e 1000 -s\", "
+        "\n                                     meaning produce a sub MSA block, the slice "
+        "\n                                     interval is 24=<POS<=1000 in terms of the "
+        "\n                                     reference genome (default=off)"
         "\n"
         "\n   -f, --force-overwrite             Overwrite existing file (default=off)"
         "\n   -h, --help                        Help message"
         "\n   -v, --version                     Version"
-        "\n"
         "\n"
     ;
 }

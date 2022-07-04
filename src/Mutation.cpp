@@ -139,14 +139,15 @@ void mut::extract_mutation(mut::MutationContainer &mutations, std::vector<std::s
         if (rhs[i] != '-') mutation.counterpart_segment.push_back(rhs[i]);
     }
 
-    if (mutation.reference_segment.size() == 1 && mutation.reference_segment[0] == '^'
-        || mutation.counterpart_segment.size() == 1 && mutation.counterpart_segment[0] == '^')
+    // if (mutation.reference_segment.size() == 1 && mutation.reference_segment[0] == '^'
+    //     || mutation.counterpart_segment.size() == 1 && mutation.counterpart_segment[0] == '^')
+    if (mutation.reference_segment.front() == '^')
     {
         unsigned i = mutation.last;
         while (lhs[i] == '-') ++i;
         if (lhs[i] == '\0')
         {
-            std::cerr << "cannot process the condition where no aligned nucleotides are the same\n";
+            std::cerr << "cannot cope with the condition where no aligned nucleotides are the same\n";
             exit(0);
         }
         mutation.reference_segment.push_back(lhs[i]);
@@ -157,6 +158,8 @@ void mut::extract_mutation(mut::MutationContainer &mutations, std::vector<std::s
     {
         mutation.front_anchored = true;
     }
+
+
 
     // .record will be valued in the calling function
     mutations[std::move(mutation)].emplace_back().sequence = which_sequence;
