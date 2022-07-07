@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20220630";
+static char constexpr version[]                                     = "v0.1.20220707";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -133,7 +133,8 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
         combine_like_substitutions = vm.find("nomerge-sub") != vm.cend();
         force = vm.find("force") != vm.cend();
         specify_infile_format();
-        if (sub_block = vm.find("sub-block") != vm.cend())
+        sub_block = vm.find("sub-block") != vm.cend();
+        if (sub_block)
             deduce_subblock_file_path();
 
         auto const found = vm.find("filter-vt");
@@ -295,7 +296,7 @@ void arguments::produce_help_message()
         "\n   msavc -i <inputfile> -o <outputfile> [options]"
         "\n"
         "\nOptions:"
-         "\n   -i, --in <inputfile>              Specify the muti-FASTA/MAF input file"
+        "\n   -i, --in <inputfile>              Specify the muti-FASTA/MAF input file"
         "\n   -o, --out <outputfile>            Specify the output VCF file name"
         "\n"
         "\n   -r, --reference <seqname>         Specify the reference genome during extracting "
@@ -304,7 +305,7 @@ void arguments::produce_help_message()
         "\n"
         "\n   -g, --genotype-matrix             Output genotype matrix (default=off)"
         "\n"
-        "\n   -n, --nomerge-sub                 Don't merge the SUB variations with the same "
+        "\n   -n, --nomerge-sub                 Do not merge the SUB variations with the same "
         "\n                                     \"POS\" and \"REF\" into one row (default=off)"
         "\n"
         "\n   -b, --filter-begin <integer>      Filtration of the POS column by specifying an "
@@ -314,7 +315,7 @@ void arguments::produce_help_message()
         "\n"
         "\n   -e, --filter-end <integer>        Filtration of the POS column by specifying an "
         "\n                                     integer such as \"-e 1000\" in terms of the "
-        "\n                                     reference genome, meaning only keep variations"
+        "\n                                     reference genome, meaning only keep variations "
         "\n                                     with POS<=1000 (default=last base index)"
         "\n"
         "\n   -c, --filter-ac <integer>         Filtration of the AC tag in the INFO column by "

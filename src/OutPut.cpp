@@ -108,6 +108,11 @@ static bool within_the_same_line(mut::Mutation const &lhs, mut::Mutation const &
             ;
 }
 
+static bool rep_seg_same(std :: string const &sega, std :: string const &segb, std :: string const abbreviated_mutation_type) noexcept
+{
+    return abbreviated_mutation_type == "REP" && sega == segb;
+}
+
 void output_file_head(std::ofstream &ofs, utils::MultipleAlignmentFormat const &infile)
 {
     ofs <<   "##fileformat=VCFv4.1"
@@ -165,6 +170,10 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
             continue;
 
         if (std::count_if(i, j, acceptable) == 0)
+            continue;
+
+        if (rep_seg_same(mutation_delegate.reference_segment, i -> first.counterpart_segment,
+                         mut::abbreviated_mutation_types[i -> first.variation_type]))
             continue;
 
         ofs << arguments::reference_name;
