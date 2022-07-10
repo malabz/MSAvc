@@ -73,14 +73,14 @@ msavc -h
 1. Download MSAvc from [relseases](https://github.com/malabz/MSAvc/releases/new).
 2. Test msavc
 ```
-./MSAvc.exe -h
+.\msavc.exe -h
 ```
 
 ## Usage
 ```
  msavc -i <inputfile> -o <outputfile> [options]               # conda version
  
- ./msavc.exe -i <inputfile> -o <outputfile> [options]         # windows version
+ .\msavc.exe -i <inputfile> -o <outputfile> [options]         # windows version
 ```
 ```
 Options:
