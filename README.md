@@ -77,7 +77,7 @@ msavc -h
 ```
 
 ## Usage
-```
+```bash
  # conda version
  msavc -i <inputfile> -o <outputfile> [options]
  
