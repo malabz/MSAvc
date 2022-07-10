@@ -145,6 +145,6 @@ MSAcv is supported by ZOU's Lab. If you have any questions and suggestions, plea
 
 If you use this software please cite:
 
-MSAvc: variation calling for genome-scale multiple sequence alignments.[(2021)](http://....)
+MSAvc: variation calling for genome-scale multiple sequence alignments.[(2022)](http://....)
 
 
