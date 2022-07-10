@@ -76,3 +76,60 @@ msavc -h
 ./MSAvc.exe -h
 ```
 
+## Usage
+```
+ msavc -i <inputfile> -o <outputfile> [options]
+```
+```
+Options:
+   -i, --in <inputfile>              Specify the muti-FASTA/MAF input file
+   -o, --out <outputfile>            Specify the output VCF file name
+
+   -r, --reference <seqname>         Specify the reference genome during extracting 
+                                     variations (default=the first sequence of the 
+                                     input file)
+
+   -g, --genotype-matrix             Output genotype matrix (default=off)
+
+   -n, --nomerge-sub                 Do not merge the SUB variations with the same 
+                                     "POS" and "REF" into one row (default=off)
+
+   -b, --filter-begin <integer>      Filtration of the POS column by specifying an 
+                                     integer such as "-b 24" in terms of the 
+                                     reference genome, meaning only keep variations 
+                                     POS>=24 (default=1, 1-based index)
+
+   -e, --filter-end <integer>        Filtration of the POS column by specifying an 
+                                     integer such as "-e 1000" in terms of the 
+                                     reference genome, meaning only keep variations 
+                                     with POS<=1000 (default=last base index)
+
+   -c, --filter-ac <integer>         Filtration of the AC tag in the INFO column by 
+                                     specifying an integer such as "-c 100", meaning 
+                                     only output variations with AC>=100 (default=0)
+
+   -t, --filter-vt <variationtype>   Filtration of the VT tag in the INFO column by 
+                                     specifying one of sub/ins/del/rep (lowercase) 
+                                     flags such as "-t sub", meaning only output the 
+                                     substitution variations (default=off)
+
+   -l, --filter-vl <integer>         Filtration of the VLEN tag in the INFO column 
+                                     by specifying an integer such as "-l 5", 
+                                     meaning only output the variations with 
+                                     VLEN>=5bp (default=0)
+
+   -s, --sub-block                   Output MSA sub-block into FASTA file, "-s" 
+                                     option works only when "-b" and "-e" are both 
+                                     specified, for instance "-b 24 -e 1000 -s", 
+                                     meaning produce a sub MSA block, the slice 
+                                     interval is 24=<POS<=1000 in terms of the 
+                                     reference genome (default=off)
+
+   -f, --force-overwrite             Overwrite existing file (default=off)
+   -h, --help                        Help message
+   -v, --version                     Version
+
+```
+
+
+
