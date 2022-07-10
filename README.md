@@ -43,6 +43,34 @@ In molecular epidemiology, the typical demand for variation calling of genome-sc
 ## Installation
 
 There are a few ways to install MSAvc. The simpliest way is using Conda. If you encounter an issue when installing MASvc or encounter a bug please report it [here](https://github.com/malabz/MSAvc/issues). 
-* OSX/Linux/WSL - using Bioconda
+### OSX/Linux/WSL - using conda
+1.Intall WSL for Windows. Instructional video [1](https://www.youtube.com/watch?v=X-DHaQLrBi8&t=5s) or [2](http://lab.malab.cn/%7Etfr/1.mp4) (Copyright belongs to the original work).
 
+2.Download and install Anaconda. Download Anaconda versions for different systems from [here](https://www.anaconda.com/products/distribution#Downloads). Instructional video of anaconda installation [1](https://www.youtube.com/watch?v=AshsPB3KT-E) or [2](http://lab.malab.cn/%7Etfr/Install_anaconda_in_Linux.mp4) (Copyright belongs to the original work).
+
+3.Install MSAvc.
+
+```bash
+#1 Acvtivate one of you conda environment
+conda activate base
+
+#2 Add channels to conda
+conda config --add channels conda-forge
+conda config --add channels bioconda
+conda config --add channels malab
+
+#3 Install the required package boost-cpp=1.77.0 for running msavc
+conda install -c conda-forge boost-cpp=1.77.0
+
+#4 Install msavc
+conda install -c malab msavc
+
+#5 Test msavc
+msavc -h
+```
+
+
+
+
+### Windows - from released package
 
