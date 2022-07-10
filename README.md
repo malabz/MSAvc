@@ -42,7 +42,7 @@ In molecular epidemiology, the typical demand for variation calling of genome-sc
 
 ## Installation
 
-There are a few ways to install MSAvc. The simpliest way is using Conda. If you encounter an issue when installing MASvc or encounter a bug please report it [here](https://github.com/malabz/MSAvc/issues). 
+There are a few ways to install MSAvc. The simpliest way is using Conda. If you encounter an issue when installing MSAvc or encounter a bug please report it [here](https://github.com/malabz/MSAvc/issues). 
 ### OSX/Linux/WSL - using conda
 1.Intall WSL for Windows. Instructional video [1](https://www.youtube.com/watch?v=X-DHaQLrBi8&t=5s) or [2](http://lab.malab.cn/%7Etfr/1.mp4) (Copyright belongs to the original work).
 
