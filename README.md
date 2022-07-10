@@ -45,12 +45,12 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 
 ## Introduction
 
-﻿The precisive study of whole genome for every single individuals and cells has been made possible by the rapid development of sequencing technology. The demand for variation calling among individual whole genomes for prokaryotic and eukaryotic population studies would be sharply increased. Current tools are either time-consuming or less accurate and failed to handle eukaryotic genome-scale multiple sequence alignments. ﻿We present MSAvc, a C++ based program, which can efficiently extract variations including substitution, indel and replacement from FASTA and MAF files of multiple genome-scale sequence alignments. MSAvc allows users to set reference sequence for a ccurate variation extraction and filter variations based on position, alternate allele count and variation type. MSAvc is able to accurately extract variations from FASTA alignment of 3 million SARS-CoV-2 sequences and MAF alignment of 21 human whole genomes. It can be easily installed via Debian, Homebrew, Conda and Docker on MacOS, Linux, and Windows (32 and 64 bits) systems. MSAvc is open source code under the GNU General Public License version 3.
+In molecular epidemiology, the typical demand for variation calling of genome-scale multiple sequence alignment (MSA) has sharply increased. However, current tools are either difficult to interpret or omit the indels and fail to handle eukaryotic genome-scale MSA. MSAvc is a C++-based program that rapidly extracts the variations including substitution, indel and replacement from multi-FASTA (prokaryotic) and multi-MAF (eukaryotic) files of genome-scale MSA. It allows users to define reference sequences for accurate variation information and filter variations of interest. MSAvc can be easily installed via Anaconda and C++ released packages on macOS, Linux, and Windows systems and is available at https://github.com/malabz/msavc.
+
 
 ## Installation
 
-There are a few ways to install MSAvc. The simpliest way is using apt (Debian/Ubuntu) or Conda. If you encounter an issue when installing MASvc or encounter a bug please report it [here](https://github.com/malabz/msavc). 
-
+There are a few ways to install MSAvc. The simpliest way is using Conda. If you encounter an issue when installing MASvc or encounter a bug please report it [here](https://github.com/malabz/msavc). 
 * Linux/WSL - Ubuntu/Debian
 * OSX/Linux/WSL - using Bioconda
 * OSX/Linux/WSL - from source
