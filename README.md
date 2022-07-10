@@ -3,6 +3,13 @@
 Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence alignments
 
 [![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/version.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge]([https://anaconda.org/malab/msavc/badges/version.svg](https://anaconda.org/malab/msavc/badges/latest_release_date.svg))](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/version.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/version.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/version.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/version.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/version.svg)](https://anaconda.org/malab/msavc)
+
 
 
 
