@@ -69,8 +69,10 @@ conda install -c malab msavc
 msavc -h
 ```
 
-
-
-
 ### Windows - from released package
+1. Download MSAvc from [relseases](https://github.com/malabz/MSAvc/releases/new).
+2. Test msavc
+```
+./MSAvc.exe -h
+```
 
