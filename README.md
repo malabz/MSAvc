@@ -19,19 +19,14 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 * [Installation](#installation)
   * [OSX/Linux/WSL \- using conda](#osxlinux---using-bioconda)
   * [Windows \- from a release tarball](#osxlinux---from-source)
-  * [Windows \- Windows Subsystem for Linux (WSL)](#Windows---Windows-Subsystem-for-Linux-(WSL)])
 * [Usage](#usage)
   * [Pipline](#pipline)
-  
   * [Example](#example)
-    
               [SUB](#sub)
               [INS](#ins)
               [DEL](#del)
               [REP](#rep)
-  
   * [Example usage](#example-usage)
-  
   * [Output](#output)
 
 * [License](#license)
