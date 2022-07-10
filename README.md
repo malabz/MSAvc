@@ -2,6 +2,7 @@
 
 Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence alignments
 
+https://anaconda.org/malab/msavc/badges/version.svg
 
 
 ## Contents
