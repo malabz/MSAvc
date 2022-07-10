@@ -18,19 +18,9 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 * [Introduction](#introduction)
 
 * [Installation](#installation)
-  
-  * [Linux/WSL \- Ubuntu/Debian](#linux---ubuntudebian)
-  
-  * [OSX/Linux/WSL \- using Bioconda](#osxlinux---using-bioconda)
-  
-  * [OSX/Linux/WSL \- from source](#osxlinux---from-source)
-  
-  * [OSX/Linux/WSL \- from a release tarball](#osxlinux---from-a-release-tarball)
-  
+  * [OSX/Linux/WSL \- using conda](#osxlinux---using-bioconda)
+  * [Windows \- from a release tarball](#osxlinux---from-source)
   * [Windows \- Windows Subsystem for Linux (WSL)](#Windows---Windows-Subsystem-for-Linux-(WSL)])
-  
-  * [All platforms \- Docker](#all-platforms---docker)
-
 * [Usage](#usage)
   
   * [Pipline](#pipline)
@@ -59,7 +49,7 @@ In molecular epidemiology, the typical demand for variation calling of genome-sc
 
 ## Installation
 
-There are a few ways to install MSAvc. The simpliest way is using Conda. If you encounter an issue when installing MASvc or encounter a bug please report it [here](https://github.com/malabz/msavc). 
+There are a few ways to install MSAvc. The simpliest way is using Conda. If you encounter an issue when installing MASvc or encounter a bug please report it [here](https://github.com/malabz/MSAvc/issues). 
 * Linux/WSL - Ubuntu/Debian
 * OSX/Linux/WSL - using Bioconda
 * OSX/Linux/WSL - from source
