@@ -16,13 +16,11 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 ## Contents
 
 * [Introduction](#introduction)
-
 * [Installation](#installation)
   * [OSX/Linux/WSL \- using conda](#osxlinux---using-bioconda)
   * [Windows \- from a release tarball](#osxlinux---from-source)
   * [Windows \- Windows Subsystem for Linux (WSL)](#Windows---Windows-Subsystem-for-Linux-(WSL)])
 * [Usage](#usage)
-  
   * [Pipline](#pipline)
   
   * [Example](#example)
