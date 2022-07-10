@@ -78,7 +78,8 @@ msavc -h
 
 ## Usage
 ```
- msavc -i <inputfile> -o <outputfile> [options]
+ msavc -i <inputfile> -o <outputfile> [options]  #conda version
+ ./msavc.exe -i <inputfile> -o <outputfile> [options]  #windows version
 ```
 ```
 Options:
