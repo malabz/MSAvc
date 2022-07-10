@@ -133,5 +133,18 @@ Options:
 
 ```
 
+## License
+
+MSAvc is free software, licensed under [MIT](https://github.com/malabz/MSAvc/blob/main/LICENSE).
+
+## Feedback/Issues
+
+MSAcv is supported by ZOU's Lab. If you have any questions and suggestions, please feel free to contact us on the [issues page](https://github.com/malabz/msavc/issues). You are also welcomed to send a copy to Furong.TANG@hotmail.com to make sure we could answer you ASAP! 
+
+## Citation
+
+If you use this software please cite:
+
+MSAvc: variation calling for genome-scale multiple sequence alignments.[(2021)](http://....)
 
 
