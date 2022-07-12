@@ -20,7 +20,7 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
   * [OSX/Linux/WSL \- using conda](#osxlinuxwsl---using-conda)
   * [Windows \- from released package](#Windows---from-released-package)
 * [Usage](#usage)
-  * [Usage](#usage)
+  * [Command\-line options](#Command-line-options)
   * [Example](#example)
 * [Performance](#performance)
 * [Output definition](#output-definition)
@@ -73,6 +73,7 @@ msavc -h
 ```
 
 ## Usage
+### Command-line options
 ```
  msavc -i <inputfile> -o <outputfile> [options]               # conda version
  
