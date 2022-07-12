@@ -128,6 +128,10 @@ Options:
    -v, --version                     Version
 
 ```
+## Performance
+
+## Output
+
 
 ## License
 
