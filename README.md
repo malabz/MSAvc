@@ -129,6 +129,8 @@ Options:
    -v, --version                     Version
 
 ```
+### Example
+
 ## Performance
 
 ## Output definition
