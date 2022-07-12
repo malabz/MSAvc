@@ -23,7 +23,7 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
   * [Usage](#usage)
   * [Example](#example)
 * [Performance](#performance)
-* [Output](#output)
+* [Output definition](#output definition)
 
 * [License](#license)
 
@@ -130,7 +130,7 @@ Options:
 ```
 ## Performance
 
-## Output
+## Output definition
 
 
 ## License
