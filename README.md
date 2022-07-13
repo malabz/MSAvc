@@ -229,12 +229,6 @@ All variants will be output in standard VCF format version 4.1, which can be the
   order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.<span
   style='mso-spacerun:yes'> 
  </tr>
- <![if supportMisalignedColumns]>
- <tr height=0 style='display:none'>
-  <td width=47 style='width:35pt'></td>
-  <td width=149 style='width:112pt'></td>
-  <td width=589 style='width:442pt'></td>
- </tr>
 </table>
 
 
