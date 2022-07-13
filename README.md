@@ -235,7 +235,6 @@ All variants will be output in standard VCF format version 4.1, which can be the
   <td width=149 style='width:112pt'></td>
   <td width=589 style='width:442pt'></td>
  </tr>
- <![endif]>
 </table>
 
 
