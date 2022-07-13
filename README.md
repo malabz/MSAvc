@@ -24,6 +24,7 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
   * [Example](#example)
 * [Performance](#performance)
 * [Output definition](#output-definition)
+* [Practical application](practical-application)
 
 * [License](#license)
 
