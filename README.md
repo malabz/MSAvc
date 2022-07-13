@@ -145,6 +145,82 @@ msavc -h
 
 
 ## Output definition
+#### <font color=ED7D31 face="Source Code Pro">**SUB**</font>
+
+| Input file of single or continuous substitutions:                                                                                                                                                                                                                      |
+|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                          |
+| <font face="Source Code Pro">TCTATCTTCGCTGCTTACGGTTTCGTCC</font>                                                                                                                                                                                                       |
+| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                         |
+| <font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**CC**</font><font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font> |
+| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                         |
+| <font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**GG**</font><font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font> |
+
+the output is:
+|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|
+| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>T</font>|<font size=2>C</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=SUB;VLEN=1</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
+|<font size=2>sequence1</font>|<font size=2>4</font>|<font size=2>.</font>|<font size=2>AT</font>|<font size=2>CC,GG</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1,1;VT=SUB;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>2</font>|
+|<font size=2>sequence1</font>|<font size=2>27</font>|<font size=2>.</font>|<font size=2>CC</font>|<font size=2>GT</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=SUB;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
+
+#### <font color=70AD47 face="Source Code Pro">**INS**</font>
+
+| Input file of single or continuous insertions:                                                                                                                                                                                                                                                                  |
+|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                                                                   |
+| <font face="Source Code Pro">--TCTATCTTCGCTGC---TTACGGTTTCGTCC---</font>                                                                                                                                                                                                                                        |
+| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                                                                  |
+| <font color=70AD47 face="Source Code Pro">**TT**</font><font face="Source Code Pro">TCTATCTTCGCTGC</font><font color=70AD47 face="Source Code Pro">**AAA**</font><font face="Source Code Pro">TTACGG</font><font face="Source Code Pro">TTTCGTCC</font><font color=70AD47 face="Source Code Pro">**ATT**</font> |
+| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                                                                  |
+| <font color=70AD47 face="Source Code Pro">**TT**</font><font face="Source Code Pro">TCTATCTTCGCTGC---</font><font face="Source Code Pro">TTACGG</font><font face="Source Code Pro">TTTCGTCC</font><font color=70AD47 face="Source Code Pro">**ATT**</font>                                                      |
+
+the output is:
+|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|
+| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
+|<font size=2>sequence1</font>|<font size=2>0</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>TT</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=INS;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
+|<font size=2>sequence1</font>|<font size=2>14</font>|<font size=2>.</font>|<font size=2>C</font>|<font size=2>CAAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=INS;VLEN=3</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|
+|<font size=2>sequence1</font>|<font size=2>28</font>|<font size=2>.</font>|<font size=2>C</font>|<font size=2>CATT</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=INS;VLEN=3</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
+
+#### <font color=5B9BD5 face="Source Code Pro">**DEL**</font>
+
+| Input file of single or continuous deletions:                                                                                                                                                                                                                                                           |
+|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                                                           |
+| <font face="Source Code Pro">TCTATCTTCGCTGCTTACGGTTTCGTCC</font>                                                                                                                                                                                                                                        |
+| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                                                          |
+| <font color=5B9BD5 face="Source Code Pro">**--**</font><font face="Source Code Pro">TATCTTCGCTG</font><font color=5B9BD5 face="Source Code Pro">**-**</font><font face="Source Code Pro">TTACGG</font><font face="Source Code Pro">TTTCG</font><font color=5B9BD5 face="Source Code Pro">**---**</font> |
+| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                                                          |
+| <font color=5B9BD5 face="Source Code Pro">**--**</font><font face="Source Code Pro">TATCTTCGCTGCTTACGG</font><font face="Source Code Pro">TTTCG</font><font color=5B9BD5 face="Source Code Pro">**---**</font>                                                                                          |
+
+the output is:
+|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|
+| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=DEL;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
+|<font size=2>sequence1</font>|<font size=2>13</font>|<font size=2>.</font>|<font size=2>GC</font>|<font size=2>G</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=DEL;VLEN=1</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|
+|<font size=2>sequence1</font>|<font size=2>25</font>|<font size=2>.</font>|<font size=2>GTCC</font>|<font size=2>G</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=DEL;VLEN=3</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
+
+#### <font color=FFC000 face="Source Code Pro">**REP**</font>
+
+| Input file of mixed situations of SUB/INS/DEL:                                                                                                                                                                                                                               |
+|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                                |
+| <font face="Source Code Pro">---TCTATCTTCGCTGC---TTACGGTTTCGTCC---</font>                                                                                                                                                                                                    |
+| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                               |
+| <font color=FFC000 face="Source Code Pro">**TTTAA**</font><font face="Source Code Pro">TATCTTCGCTGC</font><font color=FFC000 face="Source Code Pro">**AAAAA**</font><font face="Source Code Pro">ACGGTTTCG</font><font color=FFC000 face="Source Code Pro">**A-----**</font> |
+| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                               |
+| <font color=FFC000 face="Source Code Pro">**------T**</font><font face="Source Code Pro">TCTTCGCT</font><font color=FFC000 face="Source Code Pro">**A-**</font><font face="Source Code Pro">---TTACGGTTTCGT</font><font color=FFC000 face="Source Code Pro">**GTATT**</font> |
+| <font face="Source Code Pro">>sequence4</font>                                                                                                                                                                                                                               |
+| <font color=FFC000 face="Source Code Pro">**------T**</font><font face="Source Code Pro">TCTTCGCTGC</font><font color=FFC000 face="Source Code Pro">**AAAAA**</font><font face="Source Code Pro">ACGGTTTCG</font><font color=FFC000 face="Source Code Pro">**A-----**</font> |
+
+the output is:
+|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|<font size=2>sequence4</font>|
+| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |:----: |
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
+|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
 
 
 ## Practical application
