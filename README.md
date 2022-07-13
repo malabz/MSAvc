@@ -224,13 +224,8 @@ All variants will be output in standard VCF format version 4.1, which can be the
   matches the first alternate allele, the genotype of sequence will be assigned
   as “1” and so on)</td>
  </tr>
- <tr height=21 style='height:16.0pt'>
-  <td colspan=3 height=21 class=xl67 width=785 style='height:16.0pt;width:589pt'>*The
-  order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.<span
-  style='mso-spacerun:yes'> 
- </tr>
-</table>
-\*The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
+ </table>
+*The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
 
 #### <font color=ED7D31 face="Source Code Pro">**SUB**</font>
 
