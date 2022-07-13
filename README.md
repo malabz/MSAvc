@@ -151,6 +151,10 @@ msavc -h
 ## Output definition
 
 
+## Practical application
+
+
+
 ## License
 
 MSAvc is free software, licensed under [MIT](https://github.com/malabz/MSAvc/blob/main/LICENSE).
