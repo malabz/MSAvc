@@ -223,6 +223,100 @@ the output is:
 |<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
 
 
+* All variations are outputted in VCF formats version 4.2, which can be parsed to standard tools such as VCF/BCFtools [11, 12] for filtering and extracting interested information or PLINK [13] for GWAS analysis. The first 8 columns are fixed, whereas the genotype information from 9 to the rest columns are depend on user’s interest, which sharply increases the file size to store the genotype matrix.
+
+<table>
+ <col class=xl65 width=47 style='mso-width-source:userset;mso-width-alt:1493;
+ width:35pt'>
+ <col class=xl65 width=149 style='mso-width-source:userset;mso-width-alt:4778;
+ width:112pt'>
+ <col width=589 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
+ <tr height=28 style='mso-height-source:userset;height:21.0pt'>
+  <td colspan=3 height=28 class=xl65 width=785 style='height:21.0pt;width:589pt'>Documentary
+  of fixed VCF columns</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>1</td>
+  <td class=xl65>#CHROM</td>
+  <td>The name of user assigned reference genome</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>2</td>
+  <td class=xl65>POS</td>
+  <td class=xl69>The position of the first base in reference allele according
+  to the given reference genome</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>3</td>
+  <td class=xl65>ID</td>
+  <td>“.” meaning missing value</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>4</td>
+  <td class=xl65>REF</td>
+  <td>Reference allele</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>5</td>
+  <td class=xl65>ALT</td>
+  <td>Alternate Allele</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>6</td>
+  <td class=xl65>QUAL</td>
+  <td>“.” meaning missing value</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>7</td>
+  <td class=xl65>FILTER</td>
+  <td>“.” meaning missing value</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td rowspan=3 height=63 class=xl65 style='height:48.0pt'>8</td>
+  <td rowspan=3 class=xl65>INFO</td>
+  <td>AC: Alternate Allele Count</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 style='height:16.0pt'>VT: the type of variation (SUB, INS, DEL
+  and REP)</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 style='height:16.0pt'>VLEN: Difference in length between REF
+  and ALT alleles</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>9</td>
+  <td class=xl65>FORMAT</td>
+  <td>GT: genotype</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt'>10</td>
+  <td class=xl65>Reference name</td>
+  <td>The genotypes of reference genome which will always be “0”</td>
+ </tr>
+ <tr height=67 style='mso-height-source:userset;height:50.0pt'>
+  <td height=67 class=xl65 style='height:50.0pt'>11</td>
+  <td class=xl65>Sequences name*</td>
+  <td class=xl66 width=589 style='width:442pt'>Given one variation, the
+  genotype of sequences is assigned according the order of ALT value (if it
+  matches the first alternate allele, the genotype of sequence will be assigned
+  as “1” and so on)</td>
+ </tr>
+ <tr height=21 style='height:16.0pt'>
+  <td colspan=3 height=21 class=xl67 width=785 style='height:16.0pt;width:589pt'>*The
+  order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.<span
+  style='mso-spacerun:yes'> 
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=0 style='display:none'>
+  <td width=47 style='width:35pt'></td>
+  <td width=149 style='width:112pt'></td>
+  <td width=589 style='width:442pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+
 ## Practical application
 
 
