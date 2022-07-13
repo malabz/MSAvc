@@ -14,7 +14,6 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 
 
 ## Contents
-
 * [Introduction](#introduction)
 * [Installation](#installation)
   * [OSX/Linux/WSL \- using conda](#osxlinuxwsl---using-conda)
@@ -25,11 +24,8 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 * [Performance](#performance)
 * [Output definition](#output-definition)
 * [Practical application](practical-application)
-
 * [License](#license)
-
 * [Feedback/Issues](#feedbackissues)
-
 * [Citation](#citation)
 
 ## Introduction
