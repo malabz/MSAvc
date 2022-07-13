@@ -230,7 +230,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
   style='mso-spacerun:yes'> 
  </tr>
 </table>
-
+\*The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
 
 #### <font color=ED7D31 face="Source Code Pro">**SUB**</font>
 
