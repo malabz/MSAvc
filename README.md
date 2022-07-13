@@ -146,8 +146,7 @@ msavc -h
 
 ## Output definition
 
-
-* All variations are outputted in VCF formats version 4.2, which can be parsed to standard tools such as VCF/BCFtools [11, 12] for filtering and extracting interested information or PLINK [13] for GWAS analysis. The first 8 columns are fixed, whereas the genotype information from 9 to the rest columns are depend on user’s interest, which sharply increases the file size to store the genotype matrix.
+All variants will be output in standard VCF format version 4.1, which can be the input of software such as VCFtools, BCFtools for filtering or extracting variants of interest, and PLINK for GWAS analysis. The first 8 columns of the VCF file are mandatory and fixed with variation information, while the 9th to the rest columns contain the genotypes for each genome.
 
 <table>
  <col class=xl65 width=47 style='mso-width-source:userset;mso-width-alt:1493;
