@@ -156,7 +156,7 @@ msavc -h
  width:112pt'>
  <col width=589 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
  <tr height=28 style='mso-height-source:userset;height:21.0pt'>
-  <td colspan=3 height=28 class=xl65 width=785 style='height:21.0pt;width:589pt'>Documentary
+  <td colspan=3 height=28 class=xl65 width=785 style='height:21.0pt;width:800pt'>Documentary
   of fixed VCF columns</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
