@@ -74,13 +74,14 @@ msavc -h
 
 ## Usage
 ### Command-line options
+#### Command line
 ```
  msavc -i <inputfile> -o <outputfile> [options]               # conda version
  
  .\msavc.exe -i <inputfile> -o <outputfile> [options]         # windows version
 ```
+#### Options
 ```
-Options:
    -i, --in <inputfile>              Specify the muti-FASTA/MAF input file
    -o, --out <outputfile>            Specify the output VCF file name
 
