@@ -153,9 +153,9 @@ All variants will be output in standard VCF format version 4.1, which can be the
  width:35pt'>
  <col class=xl65 width=149 style='mso-width-source:userset;mso-width-alt:4778;
  width:112pt'>
- <col width=1500 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
+ <col width=1000 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
  <tr height=28 style='mso-height-source:userset;height:21.0pt'>
-  <td colspan=3 height=28 class=xl65 width=1500 style='height:21.0pt;width:1500pt'>Introduction to Variant Call Format</td>
+  <td colspan=3 height=28 class=xl65 width=1000 style='height:21.0pt;width:1500pt'>Introduction to Variant Call Format</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>1</td>
@@ -219,7 +219,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
  <tr height=67 style='mso-height-source:userset;height:50.0pt'>
   <td height=67 class=xl65 style='height:50.0pt'>11</td>
   <td class=xl65>Sequences name*</td>
-  <td class=xl66 width=1500 style='width:442pt'>Given one variation, the
+  <td class=xl66 width=1000 style='width:442pt'>Given one variation, the
   genotype of sequences is assigned according the order of ALT value (if it
   matches the first alternate allele, the genotype of sequence will be assigned
   as “1” and so on)</td>
