@@ -153,7 +153,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
  width:35pt'>
  <col class=xl65 width=149 style='mso-width-source:userset;mso-width-alt:4778;
  width:112pt'>
- <col width=589 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
+ <col width=1500 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
  <tr height=28 style='mso-height-source:userset;height:21.0pt'>
   <td colspan=3 height=28 class=xl65 width=589 style='height:21.0pt;width:589pt'>Introduction to Variant Call Format</td>
  </tr>
