@@ -165,13 +165,13 @@ All variants will be output in standard VCF format version 4.1, which can be the
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>2</td>
   <td class=xl65>POS</td>
-  <td class=xl69>The position of the first base in reference allele according
+  <td class=xl69>The position of the first base in the reference allele according
   to the given reference genome</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>3</td>
   <td class=xl65>ID</td>
-  <td>“.” meaning missing value</td>
+  <td>Semi-colon separated list of unique identifiers where available. “.” missing value was used in MSAvc</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>4</td>
@@ -181,7 +181,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>5</td>
   <td class=xl65>ALT</td>
-  <td>Alternate Allele</td>
+  <td>Comma separated list of alternate non-reference alleles</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>6</td>
