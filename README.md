@@ -186,7 +186,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>6</td>
   <td class=xl65>QUAL</td>
-  <td>“.” meaning missing value</td>
+  <td>Quality score for the assertion made in ALT for variants extracted from BED file. “.” missing value was used in MSAvc.</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>7</td>
