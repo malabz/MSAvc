@@ -231,11 +231,13 @@ All variants will be output in standard VCF format version 4.1, which can be the
 | <font face="Consolas">>sequence3</font>|
 | <font color=5B9BD5 face="Consolas">**--**</font><font face="Consolas">TATCTTCGCTGCTTACGG</font><font face="Consolas">TTTCG</font><font color=5B9BD5 face="Consolas">**---**</font>|
 
-# Color Test Document
+<style>
+H1{color:Blue !important;}
+H2{color:DarkOrange !important;}
+p{color:Black !important;}
+</style>
 
-<style>H1{color:Blue;}</style>
-<style>H2{color:DarkOrange;}</style>
-<style>p{color:Black;}</style>
+# Color Test Document
 
 ## Second Heading
 
