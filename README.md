@@ -223,7 +223,10 @@ All variants will be output in standard VCF format version 4.1, which can be the
 
 
 
-
+```diff
++ this text is highlighted in green
+- this text is highlighted in red
+```
 
 
 
