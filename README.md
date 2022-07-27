@@ -227,7 +227,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
 + this text is highlighted in green
 - this text is highlighted in red
 ```
-
+![#f03c15](https://placehold.it/15/f03c15/000000?text=+) `#f03c15 red`
 
 
 
