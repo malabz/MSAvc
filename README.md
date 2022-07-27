@@ -231,13 +231,16 @@ All variants will be output in standard VCF format version 4.1, which can be the
 | <font face="Consolas">>sequence3</font>|
 | <font color=5B9BD5 face="Consolas">**--**</font><font face="Consolas">TATCTTCGCTGCTTACGG</font><font face="Consolas">TTTCG</font><font color=5B9BD5 face="Consolas">**---**</font>|
 
+
 <style
   type="text/css">
 h1 {color:red;}
 
 p {color:blue;}
 </style>
-okay
+<p>okay</p>
+
+
 
 ## Practical application
 
