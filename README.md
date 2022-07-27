@@ -222,12 +222,17 @@ All variants will be output in standard VCF format version 4.1, which can be the
 
 #### <font color=ED7D31 face="Source Code Pro">**SUB**</font>
 
-| Input file of single or continuous substitutions:                                                                                                                                                                                                                      |
-|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                          |
-| <font face="Source Code Pro">TCTATCTTCGCTGCTTACGGTTTCGTCC</font>                                                                                                                                                                                                       |
+| Input file of single or continuous substitutions:|
+|:----- |
+````
+>sequence1 (as reference)
+TCTATCTTCGCTGCTTACGGTTTCGTCC                                                                                                                             >sequence2
+<font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**CC**</font>
+>sequence3
+<font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font>
+
 | <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                         |
-| <font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**CC**</font><font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font> |
+<font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**CC**</font><font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font> 
 | <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                         |
 | <font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**GG**</font><font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font> |
 
