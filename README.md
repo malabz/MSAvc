@@ -224,14 +224,6 @@ All variants will be output in standard VCF format version 4.1, which can be the
 
 
 
-这是默认字体
-<font face="courier New" color=#1E90FF>这是道奇蓝色courier New字体</font>
-<mark><font face="courier New" color=#1E90FF>这是高亮的道奇蓝色courier New字体</font></mark>
-<mark><strong><font face="courier New" color=#1E90FF>这是高亮加粗的道奇蓝色courier New字体</font><strong></mark>
-<mark><strong><big><font face="courier New" color=#1E90FF>这是高亮加粗大一号的道奇蓝色courier New字体<big></font><strong></mark>
-<mark><strong><big><em><font face="courier New" color=#1E90FF>这是高亮加粗大一号斜体的道奇蓝色courier New字体<big></font><strong></mark>
-
-
 
 
 
