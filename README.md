@@ -220,16 +220,15 @@ All variants will be output in standard VCF format version 4.1, which can be the
  </table>
 *The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
 
-#### <font color=ED7D31 face="Source Code Pro">**SUB**</font>
+#### <font color=5B9BD5 face="Consolas">**DEL**</font>
 | Input file of single or continuous deletions:|
 |:---- |
-| <font face="Source Code Pro">>sequence1 (as reference)</font>|
-| <font face="Source Code Pro">TCTATCTTCGCTGCTTACGGTTTCGTCC</font>|
-| <font face="Source Code Pro">>sequence2</font>|
-| <font color=5B9BD5 face="Source Code Pro">**--**</font><font face="Source Code Pro">TATCTTCGCTG</font><font color=5B9BD5 face="Source Code Pro">**-**</font><font face="Source Code Pro">TTACGG</font><font face="Source Code Pro">TTTCG</font><font color=5B9BD5 face="Source Code Pro">**---**</font> |
-| <font face="Source Code Pro">>sequence3</font>|
-| <font color=5B9BD5 face="Source Code Pro">**--**</font><font face="Source Code Pro">TATCTTCGCTGCTTACGG</font><font face="Source Code Pro">TTTCG</font><font color=5B9BD5 face="Source Code Pro">**---**</font>
-
+| <font face="Consolas">>sequence1 (as reference)</font>|
+| <font face="Consolas">TCTATCTTCGCTGCTTACGGTTTCGTCC</font>|
+| <font face="Consolas">>sequence2</font>|
+| <font color=5B9BD5 face="Consolas">**--**</font><font face="Consolas">TATCTTCGCTG</font><font color=5B9BD5 face="Consolas">**-**</font><font face="Consolas">TTACGG</font><font face="Consolas">TTTCG</font><font color=5B9BD5 face="Consolas">**---**</font> |
+| <font face="Consolas">>sequence3</font>|
+| <font color=5B9BD5 face="Consolas">**--**</font><font face="Consolas">TATCTTCGCTGCTTACGG</font><font face="Consolas">TTTCG</font><font color=5B9BD5 face="Consolas">**---**</font>|
 
 
 
