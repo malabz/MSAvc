@@ -224,7 +224,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
 
 | Input file of single or continuous substitutions:|
 |:----- |
-````
+
 >sequence1 (as reference)
 TCTATCTTCGCTGCTTACGGTTTCGTCC                                                                                                                             >sequence2
 <font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**CC**</font>
