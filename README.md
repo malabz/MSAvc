@@ -238,6 +238,10 @@ TCTATCTTCGCTGCTTACGGTTTCGTCC
 --TATCTTCGCTGCTTACGGTTTCG---
 ```
 
+SUB
+![SUB](https://github.com/malabz/MSAvc/blob/main/sub.pdf)
+
+
 
 
 ## Practical application
