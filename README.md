@@ -228,6 +228,8 @@ All variants will be output in standard VCF format version 4.1, which can be the
 
 
 ### Variation type
+Define four standard types of variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL (Supplementary Table S1). First, create a mapping table to store the information of each mutation including position, reference and alteration allele, and the variation type and length. Search for each mutation in each genome sequentially, and record the genome name if it contained the mutation and accordingly the variation count plus 1.![image](https://user-images.githubusercontent.com/36015427/181448682-ea2dadc9-e0cf-427a-9c76-b91d5f25aa0e.png)
+
 ![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.svg)
 
 
