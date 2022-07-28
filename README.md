@@ -229,10 +229,10 @@ All variants will be output in standard VCF format version 4.1, which can be the
 
 ### Variation type
 Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
-![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.svg)
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.pdf)
 
 
-![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.svg)
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.pdf)
 
 
 
