@@ -229,7 +229,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
 *The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
 
 
-###Variation type
+### Variation type
 ![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.svg)
 
 
