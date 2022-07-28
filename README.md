@@ -146,6 +146,7 @@ msavc -h
 
 
 ## Output definition
+### Introduction to Variant Call Format
 
 All variants will be output in standard VCF format version 4.1, which can be the input of software such as VCFtools, BCFtools for filtering or extracting variants of interest, and PLINK for GWAS analysis. The first 8 columns of the VCF file are mandatory and fixed with variation information, while the 9th to the rest columns contain the genotypes for each genome.
 
@@ -155,9 +156,6 @@ All variants will be output in standard VCF format version 4.1, which can be the
  <col class=xl65 width=149 style='mso-width-source:userset;mso-width-alt:4778;
  width:112pt'>
  <col width=800 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
- <tr height=28 style='mso-height-source:userset;height:21.0pt'>
-  <td colspan=3 height=28 class=xl65 width=800 style='height:21.0pt;width:1500pt'>Introduction to Variant Call Format</td>
- </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>1</td>
   <td class=xl65>#CHROM</td>
