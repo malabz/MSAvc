@@ -129,7 +129,7 @@ msavc -h
 
 ```
 ### Example
-1.Download [testdata]().
+1.Download [testdata](http://lab.malab.cn/%7Etfr/MSAvc_testdata/h3_100w.tar.xz).
 
 2.Run MSAvc.
 
@@ -239,7 +239,7 @@ TCTATCTTCGCTGCTTACGGTTTCGTCC
 ```
 
 SUB
-![SUB](https://github.com/malabz/MSAvc/blob/main/sub.pdf)
+![SUB](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.pdf)
 
 
 
