@@ -232,7 +232,7 @@ Four standard types of small variation (Danecek et al., 2011): SUB (Substitution
 ![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.svg)
 
 
-![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/sub.pdf)
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/new/sub.svg)
 
 
 
