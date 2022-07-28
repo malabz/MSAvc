@@ -135,7 +135,10 @@ Four standard types of small variation (Danecek et al., 2011): SUB (Substitution
 
 ```
 ### Example
-1.Download [testdata](http://lab.malab.cn/%7Etfr/MSAvc_testdata/h3_100w.tar.xz).
+1.Download testdata.
+     FASTA format: <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/h3_100w.tar.xz" download="h3_100w.tar.xz">h3_100w.tar.xz</a>SARS-Cov-2 genomes aligned by HAlign 3 
+     
+     MAF format: 
 
 2.Run MSAvc.
 
