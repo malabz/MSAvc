@@ -136,9 +136,8 @@ Four standard types of small variation (Danecek et al., 2011): SUB (Substitution
 ```
 ### Example
 1.Download testdata.
-- FASTA format : <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/h3_100w.tar.xz" download="h3_100w.tar.xz">h3_100w.tar.xz</a> is the alignment of 1 million respiratory syndrome coronavirus 2 (SARS‑CoV‑2) genomes via [HAlign 3](https://github.com/malabz/HAlign-3) 
-     
-     MAF format: 
+- FASTA format : <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/h3_100w.tar.xz" download="h3_100w.tar.xz">h3_100w.tar.xz</a> is the alignment of 1 million respiratory syndrome coronavirus 2 (SARS‑CoV‑2) genomes via [HAlign 3](https://github.com/malabz/HAlign-3).
+- MAF format: is the alignment of 3 human chromosone 1.
 
 2.Run MSAvc.
 
