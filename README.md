@@ -18,6 +18,7 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 * [Installation](#installation)
   * [OSX/Linux/WSL \- using conda](#osxlinuxwsl---using-conda)
   * [Windows \- from released package](#Windows---from-released-package)
+* [Pipline](#Pipline)
 * [Usage](#usage)
   * [Command\-line options](#Command-line-options)
   * [Example](#example)
@@ -68,6 +69,11 @@ msavc -h
 ```
 .\msavc.exe -h
 ```
+
+## Pipline
+Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
+
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/pipline.svg)
 
 ## Usage
 ### Command-line options
