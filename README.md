@@ -182,12 +182,12 @@ All variants will be output in standard VCF format version 4.1, which can be the
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>4</td>
-  <td class=xl65>REF</td>
+  <td class=xl65>REF*</td>
   <td>Reference allele</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>5</td>
-  <td class=xl65>ALT</td>
+  <td class=xl65>ALT*</td>
   <td>Comma separated list of alternate non-reference alleles</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
@@ -225,14 +225,16 @@ All variants will be output in standard VCF format version 4.1, which can be the
  </tr>
  <tr height=67 style='mso-height-source:userset;height:50.0pt'>
   <td height=67 class=xl65 style='height:50.0pt'>11</td>
-  <td class=xl65>Sequences name*</td>
+  <td class=xl65>Sequences name**</td>
   <td class=xl66 width=800 style='width:442pt'>Given one variation, the
   genotype of sequences is assigned according the order of ALT value (if it
   matches the first alternate allele, the genotype of sequence will be assigned
   as “1” and so on)</td>
  </tr>
  </table>
-*The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
+
+*For simple insertions and deletions in which either the REF or one of the ALT alleles would otherwise be null/empty, the REF and ALT Strings must include the base before the event (which must be reflected in the POS field), unless the event occurs at position 1 on the contig in which case it must include the base after the event.
+**The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
 
 
 ### Variation type
