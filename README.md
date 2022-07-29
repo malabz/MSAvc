@@ -154,6 +154,12 @@ Four standard types of small variation (Danecek et al., 2011): SUB (Substitution
 
 
 ## Output definition
+### Variation type
+Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
+
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/new/sub.svg)
+
+
 ### Introduction to Variant Call Format
 
 All variants will be output in standard VCF format version 4.1, which can be the input of software such as VCFtools, BCFtools for filtering or extracting variants of interest, and PLINK for GWAS analysis. The first 8 columns of the VCF file are mandatory and fixed with variation information, while the 9th to the rest columns contain the genotypes for each genome.
@@ -233,15 +239,10 @@ All variants will be output in standard VCF format version 4.1, which can be the
  </tr>
  </table>
 
- *For simple insertions and deletions in which either the REF or one of the ALT alleles would otherwise be null/empty, the REF and ALT Strings must include the base before the event (which must be reflected in the POS field), unless the event occurs at position 1 on the contig in which case it must include the base after the event.
+ *For INS, DEL and REP variations, the REF and ALT Strings must include the base before the event (which must be reflected in the POS field), unless the event occurs at position 1 on the reference genome in which case it must include the base after the event.
 
  **The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
 
-
-### Variation type
-Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
-
-![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/new/sub.svg)
 
 
 
