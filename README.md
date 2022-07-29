@@ -20,7 +20,7 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
   * [Windows \- from released package](#Windows---from-released-package)
 * [Pipline](#Pipline)
 * [Usage](#usage)
-  * [Command\-line options](#Command-line-options)
+  * [Command\-line and options](#Command-line-and-options)
   * [Example](#example)
 * [Performance](#performance)
 * [Output definition](#output-definition)
@@ -76,7 +76,7 @@ Four standard types of small variation (Danecek et al., 2011): SUB (Substitution
 ![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/pipline1.svg)
 
 ## Usage
-### Command-line options
+### Command-line and options
 #### Command line
 ```
  msavc -i <inputfile> -o <outputfile> [options]               # conda version
