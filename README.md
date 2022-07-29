@@ -15,10 +15,10 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 
 ## Contents
 * [Introduction](#introduction)
+* [Pipline](#Pipline)
 * [Installation](#installation)
   * [OSX/Linux/WSL \- using conda](#osxlinuxwsl---using-conda)
   * [Windows \- from released package](#Windows---from-released-package)
-* [Pipline](#Pipline)
 * [Usage](#usage)
   * [Command\-line and options](#Command-line-and-options)
   * [Example](#example)
@@ -32,6 +32,11 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 ## Introduction
 
 In molecular epidemiology, the typical demand for variation calling of genome-scale multiple sequence alignment (MSA) has sharply increased. However, current tools are either difficult to interpret or omit the indels and fail to handle eukaryotic genome-scale MSA. MSAvc is a C++-based program that rapidly extracts the variations including substitution, indel and replacement from multi-FASTA (prokaryotic) and multi-MAF (eukaryotic) files of genome-scale MSA. It allows users to define reference sequences for accurate variation information and filter variations of interest. MSAvc can be easily installed via Anaconda and C++ released packages on macOS, Linux, and Windows systems and is available at https://github.com/malabz/msavc.
+
+## Pipline
+Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
+
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/pipline1.svg)
 
 
 ## Installation
@@ -69,11 +74,6 @@ msavc -h
 ```
 .\msavc.exe -h
 ```
-
-## Pipline
-Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
-
-![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/pipline1.svg)
 
 ## Usage
 ### Command-line and options
