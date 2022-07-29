@@ -160,7 +160,7 @@ Four standard types of small variation (Danecek et al., 2011): SUB (Substitution
 ![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/new/sub.svg)
 
 
-### Introduction to Variant Call Format
+### Variant Call Format
 
 All variants will be output in standard VCF format version 4.1, which can be the input of software such as VCFtools, BCFtools for filtering or extracting variants of interest, and PLINK for GWAS analysis. The first 8 columns of the VCF file are mandatory and fixed with variation information, while the 9th to the rest columns contain the genotypes for each genome.
 
