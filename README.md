@@ -23,8 +23,8 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
   * [Command\-line and options](#Command-line-and-options)
   * [Example](#example)
 * [Performance](#performance)
-* [Output definition](#output-definition)
 * [Practical application](practical-application)
+* [Output definition](#output-definition)
 * [License](#license)
 * [Feedback/Issues](#feedbackissues)
 * [Citation](#citation)
@@ -153,6 +153,10 @@ msavc -h
 ## Performance
 
 
+
+## Practical application
+
+
 ## Output definition
 ### Variation type
 Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
@@ -244,9 +248,6 @@ All variants will be output in standard VCF format version 4.1, which can be the
  **The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
 
 
-
-
-## Practical application
 
 
 
