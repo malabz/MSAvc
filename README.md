@@ -141,7 +141,7 @@ msavc -h
 file                           format  type  num_seqs      sum_len  min_len  avg_len  max_len
 halign3_sars_cov_2_10kseq.fas  FASTA   DNA     10,000  431,940,000   43,194   43,194   43,194
 ```
-- MAF format: ... is the alignment of 3 human chromosone 1.
+- MAF format: <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/parsnp_human_chr1_21seq.tar.xz" download="parsnp_human_chr1_21seq.tar.xz">parsnp_human_chr1_21seq.tar.xz</a> is the alignment of 21 human chromosone 1 via the MSA tool [Parsnp](https://github.com/marbl/parsnp). The reference genome (GRCh38.p13) is the first one. 
 
 2.Run MSAvc.
 
