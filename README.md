@@ -136,7 +136,7 @@ msavc -h
 ```
 ### Example
 1.Download testdata.
-- FASTA format : <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/h3_100w.tar.xz" download="h3_100w.tar.xz">h3_100w.tar.xz</a> is the alignment of 1 million respiratory syndrome coronavirus 2 (SARS‑CoV‑2) genomes via the MSA tool [HAlign 3](https://github.com/malabz/HAlign-3).
+- FASTA format : <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/halign3_sars_cov_2_10kseq.tar.xz" download="halign3_sars_cov_2_10kseq.tar.xz">halign3_sars_cov_2_10kseq.tar.xz</a> is the alignment of 10 thousand respiratory syndrome coronavirus 2 (SARS‑CoV‑2) genomes via the MSA tool [HAlign 3](https://github.com/malabz/HAlign-3). The reference genome (EPI_ISL_402124) is the first one. 
 - MAF format: ... is the alignment of 3 human chromosone 1.
 
 2.Run MSAvc.
