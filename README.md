@@ -2,312 +2,182 @@
 
 Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence alignments
 
-[![Build Status](https://travis-ci.org/sanger-pathogens/snp-sites.png?branch=master)](https://travis-ci.org/sanger-pathogens/snp-sites)   
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/sanger-pathogens/snp-sites/blob/master/LICENSE)   
-[![status](https://img.shields.io/badge/MGEN-doihhh-brightgreen)](http://mgen.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000056)   
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/recipes/gubbins/README.html)  
-[![Container ready](https://img.shields.io/badge/container-ready-brightgreen.svg)](https://quay.io/repository/biocontainers/gubbins)  
-[![Docker Build Status](https://img.shields.io/docker/build/sangerpathogens/gubbins.svg)](https://hub.docker.com/r/sangerpathogens/gubbins)  
-[![Docker Pulls](https://img.shields.io/docker/pulls/sangerpathogens/gubbins.svg)](https://hub.docker.com/r/sangerpathogens/gubbins)  
-[![codecov](https://codecov.io/gh/sanger-pathogens/snp-sites/branch/master/graph/badge.svg)](https://codecov.io/gh/sanger-pathogens/snp-sites)   
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/version.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/latest_release_date.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/latest_release_relative_date.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/platforms.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/license.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/downloads.svg)](https://anaconda.org/malab/msavc)
+[![Anaconda-Server Badge](https://anaconda.org/malab/msavc/badges/installer/conda.svg)](https://anaconda.org/malab/msavc)
 
-![preview badge](https://img.shields.io/docker/pulls/sangerpathogens/malaria-lftp)https://img.shields.io/docker/pulls/sangerpathogens/malaria-lftp
 
-![Docker Pulls](https://img.shields.io/docker/pulls/sangerpathogens/malaria-lftp)
+
 
 ## Contents
-
 * [Introduction](#introduction)
-
+* [Pipline](#Pipline)
 * [Installation](#installation)
-  
-  * [Linux/WSL \- Ubuntu/Debian](#linux---ubuntudebian)
-  
-  * [OSX/Linux/WSL \- using Bioconda](#osxlinux---using-bioconda)
-  
-  * [OSX/Linux/WSL \- from source](#osxlinux---from-source)
-  
-  * [OSX/Linux/WSL \- from a release tarball](#osxlinux---from-a-release-tarball)
-  
-  * [Windows \- Windows Subsystem for Linux (WSL)](#Windows---Windows-Subsystem-for-Linux-(WSL)])
-  
-  * [All platforms \- Docker](#all-platforms---docker)
-
+  * [OSX/Linux/WSL \- using conda](#osxlinuxwsl---using-conda)
+  * [Windows \- from released package](#Windows---from-released-package)
 * [Usage](#usage)
-  
-  * [Pipline](#pipline)
-  
+  * [Command\-line and options](#Command-line-and-options)
   * [Example](#example)
-    
-              [SUB](#sub)
-              [INS](#ins)
-              [DEL](#del)
-              [REP](#rep)
-  
-  * [Example usage](#example-usage)
-  
-  * [Output](#output)
-
+* [Performance](#performance)
+* [Practical application](practical-application)
+* [Output definition](#output-definition)
 * [License](#license)
-
 * [Feedback/Issues](#feedbackissues)
-
 * [Citation](#citation)
 
 ## Introduction
 
-﻿The precisive study of whole genome for every single individuals and cells has been made possible by the rapid development of sequencing technology. The demand for variation calling among individual whole genomes for prokaryotic and eukaryotic population studies would be sharply increased. Current tools are either time-consuming or less accurate and failed to handle eukaryotic genome-scale multiple sequence alignments. ﻿We present MSAvc, a C++ based program, which can efficiently extract variations including substitution, indel and replacement from FASTA and MAF files of multiple genome-scale sequence alignments. MSAvc allows users to set reference sequence for a ccurate variation extraction and filter variations based on position, alternate allele count and variation type. MSAvc is able to accurately extract variations from FASTA alignment of 3 million SARS-CoV-2 sequences and MAF alignment of 21 human whole genomes. It can be easily installed via Debian, Homebrew, Conda and Docker on MacOS, Linux, and Windows (32 and 64 bits) systems. MSAvc is open source code under the GNU General Public License version 3.
+In molecular epidemiology, the typical demand for variation calling of genome-scale multiple sequence alignment (MSA) has sharply increased. However, current tools are either difficult to interpret or omit the indels and fail to handle eukaryotic genome-scale MSA. MSAvc is a C++-based program that rapidly extracts the variations including substitution, indel and replacement from multi-FASTA (prokaryotic) and multi-MAF (eukaryotic) files of genome-scale MSA. It allows users to define reference sequences for accurate variation information and filter variations of interest. MSAvc can be easily installed via Anaconda and C++ released packages on macOS, Linux, and Windows systems and is available at https://github.com/malabz/msavc.
+
+## Pipline
+Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
+
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/pipline2.svg)
+
 
 ## Installation
 
-There are a few ways to install MSAvc. The simpliest way is using apt (Debian/Ubuntu) or Conda. If you encounter an issue when installing MASvc or encounter a bug please report it [here](https://github.com/malabz/msavc). 
+There are a few ways to install MSAvc. The simpliest way is using Conda. If you encounter an issue when installing MSAvc or encounter a bug please report it [here](https://github.com/malabz/MSAvc/issues). 
+### OSX/Linux/WSL - using conda
+1.Intall WSL for Windows. Instructional video [1](https://www.youtube.com/watch?v=X-DHaQLrBi8&t=5s) or [2](http://lab.malab.cn/%7Etfr/1.mp4) (Copyright belongs to the original work).
 
-* Linux/WSL - Ubuntu/Debian
-* OSX/Linux/WSL - using Bioconda
-* OSX/Linux/WSL - from source
-* OSX/Linux/WSL - from a release tarball
-* Windows - Windows Subsystem for Linux (WSL)
-* All platforms - Docker
+2.Download and install Anaconda. Download Anaconda versions for different systems from [here](https://www.anaconda.com/products/distribution#Downloads). Instructional video of anaconda installation [1](https://www.youtube.com/watch?v=AshsPB3KT-E) or [2](http://lab.malab.cn/%7Etfr/Install_anaconda_in_Linux.mp4) (Copyright belongs to the original work).
 
-### Linux/WSL - Ubuntu/Debian
+3.Install MSAvc.
 
-If you have a recent version of Ubuntu or Debian then you can install it using apt.
+```bash
+#1 Acvtivate one of you conda environment
+conda activate base
 
-```shell
-apt-get install snp-sites
-```
-
-### OSX/Linux/WSL - using Bioconda
-
-1. Install Anaconda and add the bioconda channels ([Instructional Video for command line installation](https://www.youtube.com/watch?v=AshsPB3KT-E)). Download Anaconda versions for different systems from [here](https://www.anaconda.com/products/individual-d): 64-Bit Command Line Installer (433 MB) for OSX; 64-Bit (x86) Installer (544 MB) for Linux/WSL.
-   
-   ```bash
-   #1 Download installer
-   wget https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh
-   ```
-
-#2 Change the access permission
-chmod +x Anaconda3-2021.05-Linux-x86_64.sh
-
-#3 Run installer
-./Anaconda3-2021.05-Linux-x86_64.sh
-
-#4 Close bash and open a new shell
-conda config --set auto_activate_base false
-cd 
-git
-cd
-mkdir
-make
-curl
-bash
-
-#5 Add channels
-conda -h
-conda config --show channels
+#2 Add channels to conda
 conda config --add channels conda-forge
 conda config --add channels bioconda
+conda config --add channels malab
 
-```
-2. Install MSAvc through Anaconda.
-```shell
-#6 Creating an environment
-conda env list
-conda create -n bioinformatics
+#3 Install the required package boost-cpp=1.77.0 for running msavc
+conda install -c conda-forge boost-cpp=1.77.0
 
-#7 Install MSAvc in the environment of bioinformatics
-conda activate bioinformatics
-conda install -c bioconda msavc
+#4 Install msavc
+conda install -c malab msavc
+
+#5 Test msavc
 msavc -h
-conda deactivate
-conda remove --name moose --all
 ```
 
-### OSX/Linux/WSL - from source
-
-This is a difficult method and is only suitable for someone with advanced unix skills. No support is provided with this method, since you have advanced unix skills. Please consider using Conda instead. First install a standard development environment (e.g. gcc, automake, autoconf, libtool). Download the software from [GitHub](https://github.com/sanger-pathogens/snp-sites).
-
+### Windows - from released package
+1. Download MSAvc from [relseases](https://github.com/malabz/MSAvc/releases/new).
+2. Test msavc
 ```
-autoreconf -i -f
-./configure
-make
-sudo make install
+.\msavc.exe -h
 ```
-
-### OSX/Linux/WSL - from a release tarball
-
-This is a difficult method and is only suitable for someone with advanced unix skills. No support is provided with this method, since you have advanced unix skills. Please consider using Conda instead. First install a standard development environment (e.g. gcc, automa\
-ke, autoconf, libtool).
-
-```
-tar xzvf snp-sites-x.y.z.tar.gz
-cd snp-sites-x.y.z
-./configure
-make
-sudo make install
-```
-
-### Windows \- Windows Subsystem for Linux (WSL)
-
-#### Install Ubuntu on Windows 10
-
-First, install Ubuntu on Windows 10, click [here](https://ubuntu.com/tutorials/ubuntu-on-windows#1-overview) to access the instruction. [here](http://lab.malab.cn/%7Etfr/1.mp4)
-
-Second, 
-
-<video id="video" controls="" preload="none" height=450 width=800>
-<source id="mp4" src="http://lab.malab.cn/%7Etfr/1.mp4" type="video/mp4">
-</video
-
-```
-autoreconf -i
-./configure
-make
-make check
-```
-
-This requires libcheck (the `check` package in Ubuntu) to be installed.
-
-### All platforms - Docker
-
-Bioconda produce a Docker container so you can use the software out of the box. Install Docker and then pull the container from Bioconda https://quay.io/repository/biocontainers/snp-sites
-
-### 
 
 ## Usage
+### Command-line and options
+#### Command line
+```
+ msavc -i <inputfile> -o <outputfile> [options]               # conda version
+ 
+ .\msavc.exe -i <inputfile> -o <outputfile> [options]         # windows version
+```
+#### Options
+```
+   -i, --in <inputfile>              Specify the muti-FASTA/MAF input file
+   -o, --out <outputfile>            Specify the output VCF file name
+
+   -r, --reference <seqname>         Specify the reference genome during extracting 
+                                     variations (default=the first sequence of the 
+                                     input file)
+
+   -g, --genotype-matrix             Output genotype matrix (default=off)
+
+   -n, --nomerge-sub                 Do not merge the SUB variations with the same 
+                                     "POS" and "REF" into one row (default=off)
+
+   -b, --filter-begin <integer>      Filtration of the POS column by specifying an 
+                                     integer such as "-b 24" in terms of the 
+                                     reference genome, meaning only keep variations 
+                                     POS>=24 (default=1, 1-based index)
+
+   -e, --filter-end <integer>        Filtration of the POS column by specifying an 
+                                     integer such as "-e 1000" in terms of the 
+                                     reference genome, meaning only keep variations 
+                                     with POS<=1000 (default=last base index)
+
+   -c, --filter-ac <integer>         Filtration of the AC tag in the INFO column by 
+                                     specifying an integer such as "-c 100", meaning 
+                                     only output variations with AC>=100 (default=0)
+
+   -t, --filter-vt <variationtype>   Filtration of the VT tag in the INFO column by 
+                                     specifying one of sub/ins/del/rep (lowercase) 
+                                     flags such as "-t sub", meaning only output the 
+                                     substitution variations (default=off)
+
+   -l, --filter-vl <integer>         Filtration of the VLEN tag in the INFO column 
+                                     by specifying an integer such as "-l 5", 
+                                     meaning only output the variations with 
+                                     VLEN>=5bp (default=0)
+
+   -s, --sub-block                   Output MSA sub-block into FASTA file, "-s" 
+                                     option works only when "-b" and "-e" are both 
+                                     specified, for instance "-b 24 -e 1000 -s", 
+                                     meaning produce a sub MSA block, the slice 
+                                     interval is 24=<POS<=1000 in terms of the 
+                                     reference genome (default=off)
+
+   -f, --force-overwrite             Overwrite existing file (default=off)
+   -h, --help                        Help message
+   -v, --version                     Version
+
 
 ```
-This program extracts small variation including substitution, indel and replacement from a multi FASTA/MAF alignment file, then outputs the SNP sites in VCF formats.
-
-usage: msavc -i <inputfile> -o <outputfile> [options]
-```
-
-| Option &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Function                                                                                                                                                                                                           |
-|:------------------------------------------------ |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| -i, --in <inputfile>                             | Specify the muti-FASTA/MAF input file                                                                                                                                                                              |
-| -o, --out <outputfile>                           | Specify the output VCF file name                                                                                                                                                                                   |
-| -r, --reference <seqname>                        | Specify the reference genome during extracting variation (default=the first sequence of the input file)                                                                                                            |
-| -g, --genotype-matrix                            | Output genotype matrix (default=false)                                                                                                                                                                             |
-| -n, --nomerge-sub                                | Don't merge the SUB variations with the same "POS" and "REF" into one row (default=false)                                                                                                                          |
-| -b, --filter-begin <integer>                     | The filtration of POS column by specifying an integer such as "-b 24" in terms of reference genome, meaning only keep variations with POS>=24 (default=0)                                                          |
-| -e, --filter-end <integer>                       | The filtration of POS column by specifying an integer such as "--filter-end 1000" in terms of reference genome, meaning only keep variations with POS<1000 (default=18446744073709551615)                          |
-| -c, --filter-ac <integer>                        | The filtration of AC tag in INFO column by specifying an integer such as "-c 100", meaning only output variations with AC>=100 (default=0)                                                                         |
-| -t, --filter-vt <variationtype>                  | The filtration of VT tag in INFO column by specifying one of sub/ins/del/rep (lowercase) flag such as "-t sub", meaning only output the substitution variations (default=false)                                    |
-| -l, --filter-vl <integer>                        | The filtration of VLEN tag in INFO column by specifying an integer such as "-l 25", meaning only output the variations with VLEN>=25bp (default=0)                                                                 |
-| -s, --sub-block                                  | Output MSA sub-block into FASTA file after the filtration of POS column, for instance "-b 24 -e 100 -s", meaning produce a sub MSA block, the slice interval is 24=<POS<100 in terms of reference  (default=false) |
-| -h, --help                                       | Help message                                                                                                                                                                                                       |
-| -v, --version                                    | Version                                                                                                                                                                                                            |
-
 ### Example
+1.Download testdata.
+- FASTA format : <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/halign3_sars_cov_2_10kseq.tar.xz" download="halign3_sars_cov_2_10kseq.tar.xz">halign3_sars_cov_2_10kseq.tar.xz</a> is the alignment of 10 thousand respiratory syndrome coronavirus 2 (SARS‑CoV‑2) genomes via the MSA tool [HAlign 3](https://github.com/malabz/HAlign-3). The reference genome (EPI_ISL_402124) is the first one. 
+```
+file                           format  type  num_seqs      sum_len  min_len  avg_len  max_len
+halign3_sars_cov_2_10kseq.fas  FASTA   DNA     10,000  431,940,000   43,194   43,194   43,194
+```
+- MAF format: <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/parsnp_human_chr1_21seq.tar.xz" download="parsnp_human_chr1_21seq.tar.xz">parsnp_human_chr1_21seq.tar.xz</a> is the alignment of 21 human chromosone 1 via the MSA tool [Parsnp](https://github.com/marbl/parsnp). The reference genome (GRCh38.p13) is the first one. 
 
-#### <font color=ED7D31 face="Source Code Pro">**SUB**</font>
+2.Run MSAvc.
 
-| Input file of single or continuous substitutions:                                                                                                                                                                                                                      |
-|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                          |
-| <font face="Source Code Pro">TCTATCTTCGCTGCTTACGGTTTCGTCC</font>                                                                                                                                                                                                       |
-| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                         |
-| <font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**CC**</font><font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font> |
-| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                         |
-| <font color=#FF0000 face="Source Code Pro">**C**</font><font face="Source Code Pro">CT</font><font color=#FF0000 face="Source Code Pro">**GG**</font><font face="Source Code Pro">CTTCGCTGCTTACGGTTTCGT</font><font color=#FF0000 face="Source Code Pro">**GT**</font> |
+```shell
 
-the output is:
-|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|
-| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>T</font>|<font size=2>C</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=SUB;VLEN=1</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
-|<font size=2>sequence1</font>|<font size=2>4</font>|<font size=2>.</font>|<font size=2>AT</font>|<font size=2>CC,GG</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1,1;VT=SUB;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>2</font>|
-|<font size=2>sequence1</font>|<font size=2>27</font>|<font size=2>.</font>|<font size=2>CC</font>|<font size=2>GT</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=SUB;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
 
-#### <font color=70AD47 face="Source Code Pro">**INS**</font>
-
-| Input file of single or continuous insertions:                                                                                                                                                                                                                                                                  |
-|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                                                                   |
-| <font face="Source Code Pro">--TCTATCTTCGCTGC---TTACGGTTTCGTCC---</font>                                                                                                                                                                                                                                        |
-| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                                                                  |
-| <font color=70AD47 face="Source Code Pro">**TT**</font><font face="Source Code Pro">TCTATCTTCGCTGC</font><font color=70AD47 face="Source Code Pro">**AAA**</font><font face="Source Code Pro">TTACGG</font><font face="Source Code Pro">TTTCGTCC</font><font color=70AD47 face="Source Code Pro">**ATT**</font> |
-| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                                                                  |
-| <font color=70AD47 face="Source Code Pro">**TT**</font><font face="Source Code Pro">TCTATCTTCGCTGC---</font><font face="Source Code Pro">TTACGG</font><font face="Source Code Pro">TTTCGTCC</font><font color=70AD47 face="Source Code Pro">**ATT**</font>                                                      |
-
-the output is:
-|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|
-| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-|<font size=2>sequence1</font>|<font size=2>0</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>TT</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=INS;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
-|<font size=2>sequence1</font>|<font size=2>14</font>|<font size=2>.</font>|<font size=2>C</font>|<font size=2>CAAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=INS;VLEN=3</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|
-|<font size=2>sequence1</font>|<font size=2>28</font>|<font size=2>.</font>|<font size=2>C</font>|<font size=2>CATT</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=INS;VLEN=3</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
-
-#### <font color=5B9BD5 face="Source Code Pro">**DEL**</font>
-
-| Input file of single or continuous deletions:                                                                                                                                                                                                                                                           |
-|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                                                           |
-| <font face="Source Code Pro">TCTATCTTCGCTGCTTACGGTTTCGTCC</font>                                                                                                                                                                                                                                        |
-| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                                                          |
-| <font color=5B9BD5 face="Source Code Pro">**--**</font><font face="Source Code Pro">TATCTTCGCTG</font><font color=5B9BD5 face="Source Code Pro">**-**</font><font face="Source Code Pro">TTACGG</font><font face="Source Code Pro">TTTCG</font><font color=5B9BD5 face="Source Code Pro">**---**</font> |
-| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                                                          |
-| <font color=5B9BD5 face="Source Code Pro">**--**</font><font face="Source Code Pro">TATCTTCGCTGCTTACGG</font><font face="Source Code Pro">TTTCG</font><font color=5B9BD5 face="Source Code Pro">**---**</font>                                                                                          |
-
-the output is:
-|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|
-| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=DEL;VLEN=2</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
-|<font size=2>sequence1</font>|<font size=2>13</font>|<font size=2>.</font>|<font size=2>GC</font>|<font size=2>G</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=DEL;VLEN=1</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|
-|<font size=2>sequence1</font>|<font size=2>25</font>|<font size=2>.</font>|<font size=2>GTCC</font>|<font size=2>G</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=2;VT=DEL;VLEN=3</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>1</font>|
-
-#### <font color=FFC000 face="Source Code Pro">**REP**</font>
-
-| Input file of mixed situations of SUB/INS/DEL:                                                                                                                                                                                                                               |
-|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <font face="Source Code Pro">>sequence1 (as reference)</font>                                                                                                                                                                                                                |
-| <font face="Source Code Pro">---TCTATCTTCGCTGC---TTACGGTTTCGTCC---</font>                                                                                                                                                                                                    |
-| <font face="Source Code Pro">>sequence2</font>                                                                                                                                                                                                                               |
-| <font color=FFC000 face="Source Code Pro">**TTTAA**</font><font face="Source Code Pro">TATCTTCGCTGC</font><font color=FFC000 face="Source Code Pro">**AAAAA**</font><font face="Source Code Pro">ACGGTTTCG</font><font color=FFC000 face="Source Code Pro">**A-----**</font> |
-| <font face="Source Code Pro">>sequence3</font>                                                                                                                                                                                                                               |
-| <font color=FFC000 face="Source Code Pro">**------T**</font><font face="Source Code Pro">TCTTCGCT</font><font color=FFC000 face="Source Code Pro">**A-**</font><font face="Source Code Pro">---TTACGGTTTCGT</font><font color=FFC000 face="Source Code Pro">**GTATT**</font> |
-| <font face="Source Code Pro">>sequence4</font>                                                                                                                                                                                                                               |
-| <font color=FFC000 face="Source Code Pro">**------T**</font><font face="Source Code Pro">TCTTCGCTGC</font><font color=FFC000 face="Source Code Pro">**AAAAA**</font><font face="Source Code Pro">ACGGTTTCG</font><font color=FFC000 face="Source Code Pro">**A-----**</font> |
-
-the output is:
-|<font size=2>#CHROM</font>|<font size=2>POS</font>|<font size=2>ID</font>|<font size=2>REF</font>|<font size=2>ALT</font>|<font size=2>QUAL</font>|<font size=2>FILTER</font>|<font size=2>INFOR</font>|<font size=2>FORMAT</font>|<font size=2>sequence1</font>|<font size=2>sequence2</font>|<font size=2>sequence3</font>|<font size=2>sequence4</font>|
-| :-----:| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |:----: |
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
-|<font size=2>sequence1</font>|<font size=2>1</font>|<font size=2>.</font>|<font size=2>TC</font>|<font size=2>TTTAA</font>|<font size=2>.</font>|<font size=2>.</font>|<font size=2>AC=1;VT=REP;VLEN=5</font>|<font size=2>GT</font>|<font size=2>0</font>|<font size=2>1</font>|<font size=2>0</font>|<font size=2>0</font>|
-
-### Example usage
 
 ```
-msacv -fasta input_FASTA_filename -o output_filename.vcf
-
-msacv -fasta input_FASTA_filename -gt -derep -subcompress -o output_filename.vcf 
-
-msacv -fasta input_FASTA_filename -filPOS 24:296 -filAC 100 -filVT SUB -o output_filename.vcf 
 
 
-msacv -maf input_MAF_filename -o output_filename.vcf
 
-msacv -maf input_MAF_filename -gt -derep -subcompress -o output_filename.vcf
 
-msacv -maf input_MAF_filename -filPOS 24:296 -filAC 100 -filVT SUB -o output_filename.vcf
-```
+## Performance
 
-### Output
 
-* All variations are outputted in VCF formats version 4.2, which can be parsed to standard tools such as VCF/BCFtools [11, 12] for filtering and extracting interested information or PLINK [13] for GWAS analysis. The first 8 columns are fixed, whereas the genotype information from 9 to the rest columns are depend on user’s interest, which sharply increases the file size to store the genotype matrix.
+
+## Practical application
+
+
+## Output definition
+### Variation type
+Four standard types of small variation (Danecek et al., 2011): SUB (Substitution) represents single/multiple nucleotide substitutions; INS (Insertion) represents single/multiple insertions; DEL (Deletion) represents single/multiple deletions, REP (Replacement) stands for the complex event that the co-occurrence of SUB, INS or DEL.
+
+![VT](http://lab.malab.cn/%7Etfr/MSAvc_testdata/new/sub.svg)
+
+
+### Variant Call Format
+
+All variants will be output in standard VCF format version 4.1, which can be the input of software such as VCFtools, BCFtools for filtering or extracting variants of interest, and PLINK for GWAS analysis. The first 8 columns of the VCF file are mandatory and fixed with variation information, while the 9th to the rest columns contain the genotypes for each genome.
 
 <table>
  <col class=xl65 width=47 style='mso-width-source:userset;mso-width-alt:1493;
  width:35pt'>
  <col class=xl65 width=149 style='mso-width-source:userset;mso-width-alt:4778;
  width:112pt'>
- <col width=589 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
- <tr height=28 style='mso-height-source:userset;height:21.0pt'>
-  <td colspan=3 height=28 class=xl65 width=785 style='height:21.0pt;width:589pt'>Documentary
-  of fixed VCF columns</td>
- </tr>
+ <col width=800 style='mso-width-source:userset;mso-width-alt:18858;width:442pt'>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>1</td>
   <td class=xl65>#CHROM</td>
@@ -316,28 +186,28 @@ msacv -maf input_MAF_filename -filPOS 24:296 -filAC 100 -filVT SUB -o output_fil
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>2</td>
   <td class=xl65>POS</td>
-  <td class=xl69>The position of the first base in reference allele according
+  <td class=xl69>The position of the first base in the reference allele according
   to the given reference genome</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>3</td>
   <td class=xl65>ID</td>
-  <td>“.” meaning missing value</td>
+  <td>Semi-colon separated list of unique identifiers where available for variants. “.” missing value was used in MSAvc.</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>4</td>
-  <td class=xl65>REF</td>
+  <td class=xl65>REF*</td>
   <td>Reference allele</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>5</td>
-  <td class=xl65>ALT</td>
-  <td>Alternate Allele</td>
+  <td class=xl65>ALT*</td>
+  <td>Comma separated list of alternate non-reference alleles</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>6</td>
   <td class=xl65>QUAL</td>
-  <td>“.” meaning missing value</td>
+  <td>Quality score for the assertion made in ALT for variants extracted from BAM file. “.” missing value was used in MSAvc.</td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 class=xl65 style='height:16.0pt'>7</td>
@@ -369,29 +239,25 @@ msacv -maf input_MAF_filename -filPOS 24:296 -filAC 100 -filVT SUB -o output_fil
  </tr>
  <tr height=67 style='mso-height-source:userset;height:50.0pt'>
   <td height=67 class=xl65 style='height:50.0pt'>11</td>
-  <td class=xl65>Sequences name*</td>
-  <td class=xl66 width=589 style='width:442pt'>Given one variation, the
+  <td class=xl65>Sequences name**</td>
+  <td class=xl66 width=800 style='width:442pt'>Given one variation, the
   genotype of sequences is assigned according the order of ALT value (if it
   matches the first alternate allele, the genotype of sequence will be assigned
   as “1” and so on)</td>
  </tr>
- <tr height=21 style='height:16.0pt'>
-  <td colspan=3 height=21 class=xl67 width=785 style='height:16.0pt;width:589pt'>*The
-  order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.<span
-  style='mso-spacerun:yes'> 
- </tr>
- <![if supportMisalignedColumns]>
- <tr height=0 style='display:none'>
-  <td width=47 style='width:35pt'></td>
-  <td width=149 style='width:112pt'></td>
-  <td width=589 style='width:442pt'></td>
- </tr>
- <![endif]>
-</table>
+ </table>
+
+ *For INS, DEL and REP variations, the REF and ALT Strings must include the base before the event (which must be reflected in the POS field), unless the event occurs at position 1 on the reference genome in which case it must include the base after the event.
+
+ **The order of other sequences is in the same order of FASTA/MAF file after removing the chosen reference.
+
+
+
+
 
 ## License
 
-MSAvc is free software, licensed under [GPLv3](https://github.com/sanger-pathogens/snp-sites/blob/master/LICENSE).
+MSAvc is free software, licensed under [MIT](https://github.com/malabz/MSAvc/blob/main/LICENSE).
 
 ## Feedback/Issues
 
@@ -401,7 +267,6 @@ MSAcv is supported by ZOU's Lab. If you have any questions and suggestions, plea
 
 If you use this software please cite:
 
-MSAvc: variation calling for genome-scale multiple sequence alignments, Furong TANG[^#], Jiannan CHAO[^#], Fenglong Yang, Lei Xu[^*] and Quan Zou[^*], [?????(?), (2021)](http://mgen.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000056)
+MSAvc: variation calling for genome-scale multiple sequence alignments.[(2022)](http://....)
 
-[^#]: First author
-[^*]: Corresponding author
+
