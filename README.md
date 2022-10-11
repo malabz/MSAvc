@@ -20,8 +20,8 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
   * [OSX/Linux/WSL \- using conda](#osxlinuxwsl---using-conda)
   * [Windows \- from released package](#Windows---from-released-package)
 * [Usage](#usage)
-  * [Command\-line and options](#Command-line-and-options)
-  * [Example](#example)
+  * [Command\-line](#Command-line)
+  * [Options](#Options)
 * [Performance](#performance)
 * [Practical application](practical-application)
 * [Output definition](#output-definition)
@@ -76,14 +76,14 @@ msavc -h
 ```
 
 ## Usage
-### Command-line and options
-#### Command line
+### Command line
+
 ```
  msavc -i <inputfile> -o <outputfile> [options]               # conda version
  
  .\msavc.exe -i <inputfile> -o <outputfile> [options]         # windows version
 ```
-#### Options
+### Options
 ```
    -i, --in <inputfile>              Specify the multi-FASTA/MAF input file
    -o, --out <outputfile>            Specify the output VCF file name
@@ -139,7 +139,12 @@ msavc -h
 
 
 ```
-### Example
+
+## Performance
+
+
+
+## Practical application
 1.Download testdata.
 - FASTA format : <a href="http://lab.malab.cn/%7Etfr/MSAvc_testdata/halign3_sars_cov_2_10kseq.tar.xz" download="halign3_sars_cov_2_10kseq.tar.xz">halign3_sars_cov_2_10kseq.tar.xz</a> is the alignment of 10 thousand respiratory syndrome coronavirus 2 (SARS‑CoV‑2) genomes via the MSA tool [HAlign 3](https://github.com/malabz/HAlign-3). The reference genome (EPI_ISL_402124) is the first one. 
 ```
@@ -156,14 +161,6 @@ halign3_sars_cov_2_10kseq.fas  FASTA   DNA     10,000  431,940,000   43,194   43
 
 ```
 
-
-
-
-## Performance
-
-
-
-## Practical application
 
 
 ## Output definition
