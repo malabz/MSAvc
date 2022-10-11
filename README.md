@@ -243,7 +243,7 @@ All variants will be output in standard VCF format version 4.1, which can be the
   <td height=67 class=xl65 style='height:50.0pt'>11</td>
   <td class=xl65>Sequences name**</td>
   <td class=xl66 width=800 style='width:442pt'>Given one variation, the
-  genotype of sequences is assigned according the order of ALT value (if it
+  genotype of sequence is assigned according the order of ALT value (if it
   matches the first alternate allele, the genotype of sequence will be assigned
   as “1” and so on)</td>
  </tr>
