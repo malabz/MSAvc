@@ -22,8 +22,8 @@ Fast variations calling from a FASTA/MAF file of genome-scale multiple sequence 
 * [Usage](#usage)
   * [Command\-line](#Command-line)
   * [Options](#Options)
-* [Performance](#performance)
 * [Practical application](practical-application)
+* [Performance](#performance)
 * [Output definition](#output-definition)
 * [License](#license)
 * [Feedback/Issues](#feedbackissues)
@@ -140,9 +140,6 @@ msavc -h
 
 ```
 
-## Performance
-
-
 
 ## Practical application
 1.Download testdata.
@@ -160,6 +157,9 @@ halign3_sars_cov_2_10kseq.fas  FASTA   DNA     10,000  431,940,000   43,194   43
 
 
 ```
+
+## Performance
+
 
 
 
