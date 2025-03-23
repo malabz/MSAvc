@@ -28,22 +28,20 @@ int main(int argc, char **argv)
     arguments::parse_arguments(argc, argv);
 
     std::ifstream ifs(arguments::infile_path);
-    if (!ifs) { std::cout << "cannot access file " << arguments::infile_path << '\n'; exit(0); }
+    if (!ifs) { std::cerr << "cannot access file " << arguments::infile_path << '\n'; exit(1); }
 
     utils::MultipleAlignmentFormat infile;
-
+ 
     if (arguments::infile_in_fasta)
     {
         utils::Fasta fasta(ifs);
         arguments::check_arguments(fasta);
-
         infile.read(std::move(fasta));
     }
     else
     {
         infile.read(ifs);
         arguments::check_arguments(infile);
-
         infile.reverse_record_if_necessary(arguments::reference_index);
     }
 
@@ -61,7 +59,7 @@ int main(int argc, char **argv)
     if (arguments::sub_block)
         output_sub_block(infile, arguments::lpos, arguments::rpos);
 
-    std::cout << "success!\n";
+    std::cerr << "success!\n";
 
     return 0;
 }

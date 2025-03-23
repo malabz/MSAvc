@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20220707";
+static char constexpr version[]                                     = "v0.1.20220924.beta";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -22,6 +22,9 @@ static char constexpr variation_type_filter_description[]           = "";
 static char constexpr variation_length_filter_description[]         = "";
 static char constexpr force_descrition[]                            = "";
 static char constexpr sub_block_description[]                       = "";
+static char constexpr check_duplicate_description[]                 = "";
+static char constexpr compress_bgz_description[]                    = "";
+static char constexpr buffer_size_description[]                     = "";
 
 std::string arguments::infile_path;
 std::string arguments::outfile_path;
@@ -37,13 +40,18 @@ unsigned arguments::lpos;
 unsigned arguments::rpos;
 
 unsigned arguments::minimum_alternative_allele_count_acceptable;
+unsigned arguments::maximum_alternative_allele_count_acceptable;
 unsigned arguments::minimum_variation_length_acceptable;
+unsigned arguments::maximum_variation_length_acceptable;
 bool arguments::variation_type_acceptable[4];
 
 bool arguments::force;
 
 bool arguments::sub_block;
 std::string arguments::sub_block_outfile_path;
+bool arguments::check_duplicate;
+bool arguments::compress_bgz;
+unsigned arguments::buffer_size;
 
 void arguments::specify_infile_format()
 {
@@ -64,7 +72,7 @@ void arguments::deduce_subblock_file_path()
     std::filesystem::path const path(outfile_path);
     if (path.has_stem() == false) {
         std::cerr << "output file path illegal: " << outfile_path << '\n';
-        exit(0);
+        exit(1);
     }
 
     std::filesystem::path rhs = path.parent_path();
@@ -90,30 +98,44 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     position_filter_begin_option->default_value(1); // 1-based
     position_filter_end_option->default_value(std::numeric_limits<unsigned>::max() - 1); // -1 in case of overflow
 
-    auto const alternative_allele_count_filter_option = boost::program_options::value<unsigned>(&minimum_alternative_allele_count_acceptable);
-    alternative_allele_count_filter_option->default_value(1);
+    auto const minimum_alternative_allele_count_filter_option = boost::program_options::value<unsigned>(&minimum_alternative_allele_count_acceptable);
+    minimum_alternative_allele_count_filter_option->default_value(1);
+
+    auto const maximum_alternative_allele_count_filter_option = boost::program_options::value<unsigned>(&maximum_alternative_allele_count_acceptable);
+    maximum_alternative_allele_count_filter_option->default_value(std::numeric_limits<unsigned>::max() - 1);
 
     auto const variation_type_filter_option = boost::program_options::value<std::vector<std::string>>();
 
-    auto const variation_length_filter_option = boost::program_options::value<unsigned>(&minimum_variation_length_acceptable);
-    variation_length_filter_option->default_value(1);
+    auto const minimum_variation_length_filter_option = boost::program_options::value<unsigned>(&minimum_variation_length_acceptable);
+    minimum_variation_length_filter_option->default_value(1);
+
+    auto const maximum_variation_length_filter_option = boost::program_options::value<unsigned>(&maximum_variation_length_acceptable);
+    maximum_variation_length_filter_option->default_value(std::numeric_limits<unsigned>::max() - 1);
+
+    auto const buffer_size_option = boost::program_options::value<unsigned>(&buffer_size);
+    buffer_size_option->default_value(1 << 20);
 
     boost::program_options::options_description desc("allowed options");
     desc.add_options()
-        ("help,h",                                                    help_description)
-        ("version,v",                                                 version_description)
-        ("in,i",              infile_option,                          infile_description)
-        ("out,o",             outfile_option,                         outfile_description)
-        ("reference,r",       reference_option,                       reference_description)
-        ("genotype-matrix,g",                                         genotype_matrix_description)
-        ("nomerge-sub,n",                                             no_merge_sub_description)
-        ("filter-begin,b",    position_filter_begin_option,           position_filter_begin_description)
-        ("filter-end,e",      position_filter_end_option,             position_filter_end_description)
-        ("filter-ac,c",       alternative_allele_count_filter_option, alternative_allele_count_filter_description)
-        ("filter-vt,t",       variation_type_filter_option,           variation_length_filter_description)
-        ("filter-vl,l",       variation_length_filter_option,         variation_length_filter_description)
-        ("force,f",                                                   force_descrition)
-        ("sub-block,s",                                               sub_block_description)
+        ("help,h",                                                            help_description)
+        ("version,v",                                                         version_description)
+        ("in,i",              infile_option,                                  infile_description)
+        ("out,o",             outfile_option,                                 outfile_description)
+        ("reference,r",       reference_option,                               reference_description)
+        ("genotype-matrix,g",                                                 genotype_matrix_description)
+        ("nomerge-sub,n",                                                     no_merge_sub_description)
+        ("filter-begin,b",    position_filter_begin_option,                   position_filter_begin_description)
+        ("filter-end,e",      position_filter_end_option,                     position_filter_end_description)
+        ("ac-greater,c",      minimum_alternative_allele_count_filter_option, alternative_allele_count_filter_description)
+        ("ac-less,d",         maximum_alternative_allele_count_filter_option, alternative_allele_count_filter_description)
+        ("filter-vt,t",       variation_type_filter_option,                   variation_length_filter_description)
+        ("vl-greater,l",      minimum_variation_length_filter_option,         variation_length_filter_description)
+        ("vl-less,m",         maximum_variation_length_filter_option,         variation_length_filter_description)
+        ("force,f",                                                           force_descrition)
+        ("sub-block,s",                                                       sub_block_description)
+        ("duplicate-name,N",                                                  check_duplicate_description)
+        ("compress-bgz,C",                                                    compress_bgz_description)
+        ("buffer-size,B",     buffer_size_option,                             buffer_size_description)
     ;
 
     try
@@ -134,6 +156,8 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
         force = vm.find("force") != vm.cend();
         specify_infile_format();
         sub_block = vm.find("sub-block") != vm.cend();
+        check_duplicate = vm.find("duplicate-name") != vm.cend();
+        compress_bgz = vm.find("compress-bgz") != vm.cend();
         if (sub_block)
             deduce_subblock_file_path();
 
@@ -161,7 +185,7 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     catch(std::exception const &e)
     {
         std::cerr << e.what() << '\n';
-        exit(0);
+        exit(1);
     }
 
     // closed to open
@@ -174,19 +198,19 @@ void arguments::check_arguments(utils::Fasta const &infile)
 
     if (row == 0) {
         std::cerr << "fasta format error\n";
-        exit(0);
+        exit(1);
     }
 
     if (row == 1) {
         std::cerr << "only one sequence found\n";
-        exit(0);
+        exit(1);
     }
 
     unsigned const col = infile.sequences[0].size();
     for (unsigned i = 1; i != row; ++i)
         if (infile.sequences[i].size() != col) {
             std::cerr << "sequences not with the same length\n";
-            exit(0);
+            exit(1);
         }
 
     if (reference_name.size())
@@ -222,7 +246,7 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
 {
     if (infile.records.size() == 0) {
         std::cerr << "maf format error\n";
-        exit(0);
+        exit(1);
     }
 
     for (auto const &record : infile.records)
@@ -234,7 +258,7 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
         for (unsigned i = 1; i != row; ++i)
             if (record.sequences[i].size() != col) {
                 std::cerr << "sequences not with the same length\n";
-                exit(0);
+                exit(1);
             }
     }
 
@@ -262,11 +286,22 @@ void arguments::check_arguments()
 
     if (force == false)
     {
-        if (std::filesystem::exists(outfile_path))
-            argument_error("file " + outfile_path + " exists; use --force or -f to demand an overwrite");
+        if(! compress_bgz)
+        {
+            if (std::filesystem::exists(outfile_path))
+                argument_error("file " + outfile_path + " exists; use --force or -f to demand an overwrite");
 
-        if (sub_block && std::filesystem::exists(sub_block_outfile_path))
-            argument_error("file " + sub_block_outfile_path + " exists; use --force or -f to demand an overwrite");
+            if (sub_block && std::filesystem::exists(sub_block_outfile_path))
+                argument_error("file " + sub_block_outfile_path + " exists; use --force or -f to demand an overwrite");
+        }
+        else
+        {
+            if (std::filesystem::exists(outfile_path + ".gz"))
+                argument_error("file " + outfile_path + ".gz exists; use --force or -f to demand an overwrite");
+
+            if (sub_block && std::filesystem::exists(sub_block_outfile_path + ".gz"))
+                argument_error("file " + sub_block_outfile_path + ".gz exists; use --force or -f to demand an overwrite");
+        }
     }
 }
 
@@ -278,67 +313,70 @@ void arguments::infile_format_unexpected()
 void arguments::argument_error(std::string const &message)
 {
     std::cerr << "argument error: " << message << '\n';
-    exit(0);
+    exit(1);
 }
 
 void arguments::produce_version_message()
 {
-    std::cout << version << '\n';
+    std::cerr << version << '\n';
 }
 
 void arguments::produce_help_message()
 {
-    std::cout << "msavc " << version << 
+    std::cerr << "msavc " << version <<
         "\n   MSAvc: variation calling for genome-scale multiple sequence alignments"
         "\n   See https://github.com/malabz/msavc for the most up-to-date documentation."
         "\n"
-        "\nusage:"
+        "\nUsage:"
         "\n   msavc -i <inputfile> -o <outputfile> [options]"
         "\n"
         "\nOptions:"
-        "\n   -i, --in <inputfile>              Specify the muti-FASTA/MAF input file"
+        "\n   -i, --in <inputfile>              Specify the multi-FASTA/MAF input file"
         "\n   -o, --out <outputfile>            Specify the output VCF file name"
         "\n"
-        "\n   -r, --reference <seqname>         Specify the reference genome during extracting "
-        "\n                                     variations (default=the first sequence of the "
-        "\n                                     input file)"
+        "\n   -r, --reference <seqname>         Specify the reference genome during extracting variations "
+        "\n                                     (default=the first sequence of the input file)"
         "\n"
         "\n   -g, --genotype-matrix             Output genotype matrix (default=off)"
         "\n"
-        "\n   -n, --nomerge-sub                 Do not merge the SUB variations with the same "
-        "\n                                     \"POS\" and \"REF\" into one row (default=off)"
+        "\n   -n, --nomerge-sub                 Do not merge the SUB variations with the same \"POS\" and \"REF\" "
+        "\n                                     into one row (default=off)"
         "\n"
-        "\n   -b, --filter-begin <integer>      Filtration of the POS column by specifying an "
-        "\n                                     integer such as \"-b 24\" in terms of the "
-        "\n                                     reference genome, meaning only keep variations "
-        "\n                                     POS>=24 (default=1, 1-based index)"
+        "\n   -b, --filter-begin <integer>      Filtration via the POS column by specifying an integer in terms "
+        "\n                                     of the reference genome: \"-b 24\" keep the variations with POS>=24 "
+        "\n                                     (default=1, 1-based index)"
         "\n"
-        "\n   -e, --filter-end <integer>        Filtration of the POS column by specifying an "
-        "\n                                     integer such as \"-e 1000\" in terms of the "
-        "\n                                     reference genome, meaning only keep variations "
-        "\n                                     with POS<=1000 (default=last base index)"
+        "\n   -e, --filter-end <integer>        Filtration via the POS column by specifying an integer: \"-e 1000\"" 
+        "\n                                     keep the variations with POS<=1000 (default=the last base index, "
+        "\n                                     1-based index)"
         "\n"
-        "\n   -c, --filter-ac <integer>         Filtration of the AC tag in the INFO column by "
-        "\n                                     specifying an integer such as \"-c 100\", meaning "
-        "\n                                     only output variations with AC>=100 (default=0)"
+        "\n   -c, --ac-greater <integer>        Filtration via the AC tag in the INFO column by specifying an "
+        "\n                                     integer: \"-c 10\" output the variations with AC>=10 (default=0)"
         "\n"
-        "\n   -t, --filter-vt <variationtype>   Filtration of the VT tag in the INFO column by "
-        "\n                                     specifying one of sub/ins/del/rep (lowercase) "
-        "\n                                     flags such as \"-t sub\", meaning only output the "
+        "\n   -d, --ac-less <integer>           Filtration via the AC tag: \"-d 100\" output the variations with "
+        "\n                                     AC<100 (default=the total number of sequences)"
+        "\n"
+        "\n   -t, --filter-vt <variationtype>   Filtration via the VT tag in the INFO column by specifying one of "
+        "\n                                     sub/ins/del/rep (lowercase) flags: \"-t sub\" only output the "
         "\n                                     substitution variations (default=off)"
         "\n"
-        "\n   -l, --filter-vl <integer>         Filtration of the VLEN tag in the INFO column "
-        "\n                                     by specifying an integer such as \"-l 5\", "
-        "\n                                     meaning only output the variations with "
-        "\n                                     VLEN>=5bp (default=0)"
+        "\n   -l, --vl-greater <integer>        Filtration via the VLEN tag in the INFO column by specifying an "
+        "\n                                     integer: \"-l 5\" output the variations with VLEN>=5bp (default=0)"
         "\n"
-        "\n   -s, --sub-block                   Output MSA sub-block into FASTA file, \"-s\" "
-        "\n                                     option works only when \"-b\" and \"-e\" are both "
-        "\n                                     specified, for instance \"-b 24 -e 1000 -s\", "
-        "\n                                     meaning produce a sub MSA block, the slice "
-        "\n                                     interval is 24=<POS<=1000 in terms of the "
-        "\n                                     reference genome (default=off)"
+        "\n   -m, --vl-less <integer>           Filtration via the VLEN tag: \"-m 10\" output the variations with "
+        "\n                                     VLEN<10bp (default=length of reference genome)"
         "\n"
+        "\n   -s, --sub-block                   Output MSA sub-block into FASTA file, \"-s\" option works only when "
+        "\n                                     \"-b\" and \"-e\" are both specified: \"-b 24 -e 1000 -s\" produce a "
+        "\n                                     sub MSA block; the slice interval is 24=<POS<=1000 in terms of "
+        "\n                                     the reference genome (default=off)"
+        "\n"
+        "\n   -N, --duplicate-name              Check duplicate name in file (default=off)"
+        "\n   -C, --compress-bgz                Compress the VCF output file. As the number of sequences and"
+        "\n                                     variations increases, the VCF file with \"-g\" becomes super large."
+        "\n"
+        "\n   -B, --buffer-size                 String buffer size: For large files, set this size smaller in order to"
+        "\n                                     lower the memory usage, only used in FASTA file (default=1048576)"
         "\n   -f, --force-overwrite             Overwrite existing file (default=off)"
         "\n   -h, --help                        Help message"
         "\n   -v, --version                     Version"
@@ -357,21 +395,25 @@ std::ostream &arguments::print_variation_type(std::ostream &os)
     for (unsigned i = 0, cnt = 0; i != 4; ++i)
         if (variation_type_acceptable[i])
         {
-            if (cnt++) std::cout << "; ";
-            std::cout << mut::mutation_types[i];
+            if (cnt++) std::cerr << "; ";
+            std::cerr << mut::mutation_types[i];
         }
     return os;
 }
 
 void arguments::print_arguments()
 {
-    std::cout
+    std::cerr
         << "\ninput file path: "
         << "\n\t" << infile_path
         << "\noutput file path: "
-        << "\n\t" << outfile_path
+        << "\n\t" << outfile_path << (compress_bgz ? ".gz" : "")
         << "\ninput file format: "
         << "\n\t" << (infile_in_fasta ? "fasta" : "maf")
+        << "\ncheck duplicate: "
+        << "\n\t" << yes_or_no(check_duplicate)
+        << "\noutput compress gz:"
+        << "\n\t" << yes_or_no(compress_bgz)
         << "\nreference name: "
         << "\n\t" << reference_name
         << "\ngenotype matrix output: "
@@ -384,14 +426,18 @@ void arguments::print_arguments()
         << "\n\t" << rpos - 1 // closed to open
         << "\nminimum alternative allele count acceptable: "
         << "\n\t" << minimum_alternative_allele_count_acceptable
+        << "\nmaximum alternative allele count acceptable: "
+        << "\n\t" << maximum_alternative_allele_count_acceptable
         << "\nminimum variation length acceptable: "
         << "\n\t" << minimum_variation_length_acceptable
+        << "\nmaximum variation length acceptable: "
+        << "\n\t" << maximum_variation_length_acceptable
         << "\nvariation type acceptable: "
-        << "\n\t"; print_variation_type(std::cout)
+        << "\n\t"; print_variation_type(std::cerr)
         << "\noverwrite the file if existing file path provided: "
         << "\n\t" << yes_or_no(force)
         << "\noutput sub-block: "
-        << "\n\t" << (sub_block ? sub_block_outfile_path : "no")
+        << "\n\t" << (sub_block ? sub_block_outfile_path + (compress_bgz ? ".gz" : "") : "no")
         << '\n'
     ;
 }

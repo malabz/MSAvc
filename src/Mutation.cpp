@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Mutation.hpp"
+#include "Arguments.hpp"
 
 mut::MutationContainer mut::search_in(std::vector<std::string> const &sequences, unsigned reference_index)
 {
@@ -38,18 +39,32 @@ mut::MutationContainer mut::search_in(utils::MultipleAlignmentFormat const &infi
         if (reference_index_in_this_record == row) // one record might not contain the reference sequence
             continue;
 
+        // check this block is in [lpos, rpos)
+        unsigned const offset = record.begins[reference_index_in_this_record];
+        // assert the length of sequences is same
+        /*
+        if(offset >= arguments::rpos || offset + record.sequences[0].size() < arguments::lpos && 
+           !(offset == 0 && arguments::lpos == 1))
+            continue;
+        */
+
         std::string const &reference = record.sequences[reference_index_in_this_record];
         unsigned const col = reference.size();
 
         auto const &map_to_source_site = record.map_to_source_site;
 
         MutationContainer const raw_mutations = search_in(record.sequences, reference_index_in_this_record);
-        unsigned const offset = record.begins[reference_index_in_this_record];
 
         for (auto const &raw_mutation : raw_mutations)
         {
             auto mutation = raw_mutation.first;
-
+            /*
+            // check this mutations is in [lpos, rpos)
+            if(map_to_source_site[mutation.first] + offset < arguments::lpos ||
+               map_to_source_site[mutation.first] + offset >= arguments::rpos &&
+               !(map_to_source_site[mutation.first] + offset == 0 && arguments::lpos == 1))
+                continue;
+            */
             // assert reference[mutation.first] != '-'
             mutation.first = map_to_source_site[mutation.first] + offset;
 
@@ -147,12 +162,15 @@ void mut::extract_mutation(mut::MutationContainer &mutations, std::vector<std::s
         while (lhs[i] == '-') ++i;
         if (lhs[i] == '\0')
         {
-            std::cerr << "cannot cope with the condition where no aligned nucleotides are the same\n";
-            exit(0);
+            std::cerr << "cannot cope with the condition where no aligned nucleotides are the same. Skip this mutation\n";
+            // exit(0);
         }
-        mutation.reference_segment.push_back(lhs[i]);
-        mutation.counterpart_segment.push_back(lhs[i]);
-        mutation.front_anchored = false;
+        else
+        {
+            mutation.reference_segment.push_back(lhs[i]);
+            mutation.counterpart_segment.push_back(lhs[i]);
+            mutation.front_anchored = false;
+        }
     }
     else
     {

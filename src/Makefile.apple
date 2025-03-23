@@ -9,7 +9,7 @@ CPP = clang++
 CPPFLAGS = -O3
 # -static
 
-LIBS = -lboost_program_options
+LIBS = -lboost_program_options -lbz2 -ltcmalloc -lhts
 # LIBS = ../lib/libboost_program_options.dylib
 
 STDF = -std=c++2a

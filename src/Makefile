@@ -4,11 +4,11 @@ INCLUDEDIR = $(PREFIX)/include
 LIBDIR = $(PREFIX)/lib
 DESTDIR = 
 
-CPP = clang++
+CPP = g++
 #CPP = iCPP
 CPPFLAGS = -O3
 
-LIBS = -lboost_program_options
+LIBS = -lboost_program_options -lc -lstdc++ -ldl -lhts -lz -llzma -ldeflate -lbz2 -static
 
 STDF = -std=c++2a
 
@@ -21,8 +21,6 @@ OBJMSAVC = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
 # HEADER = 
 
 all : $(PROGS)
-	@echo "Using patchelf change the file header. If not installed, use 'apt install patchelf' to install it."
-	patchelf --set-rpath '$$ORIGIN/../lib/' ./msavc
 	@echo done.
 
 msavc : $(OBJMSAVC)
@@ -41,7 +39,7 @@ Mutation.o : Mutation.cpp Mutation.hpp
 	$(CPP) $(MYCFLAGS) -c Mutation.cpp
 
 OutPut.o : OutPut.cpp OutPut.hpp
-	$(CPP) $(MYCFLAGS) -c OutPut.cpp
+	$(CPP) $(MYCFLAGS) -c OutPut.cpp -I $(INCLUDEDIR)
 
 msavc.o: msavc.cpp OutPut.hpp Arguments.hpp
 	$(CPP) $(MYCFLAGS) -c msavc.cpp

@@ -4,6 +4,7 @@
 #include <array>
 
 #include "MultipleAlignmentFormat.hpp"
+#include "Arguments.hpp"
 
 static std::array<std::vector<unsigned>, 2> split(std::string const &str)
 {
@@ -35,7 +36,7 @@ static unsigned string_to_unsigned(std::string const &num) noexcept
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
-        exit(0);
+        exit(1);
     }
 
     return u;
@@ -104,9 +105,12 @@ void utils::MultipleAlignmentFormat::read(std::istream &is)
             token = n - 6;
             std::string name = line.substr(begins[1], ends[token] - begins[1]);
 
-            if (names_of_current_record.contains(name))
-                Fasta::duplicate_name();
-            names_of_current_record.insert(name);
+            if(arguments::check_duplicate)
+            {
+                if (names_of_current_record.contains(name))
+                    Fasta::duplicate_name();
+                names_of_current_record.insert(name);
+            }
 
             // leading flag
             token = 0;
@@ -154,7 +158,7 @@ void utils::MultipleAlignmentFormat::read(utils::Fasta &&fasta)
 void utils::MultipleAlignmentFormat::format_error()
 {
     std::cerr << "maf format error\n";
-    exit(0);
+    exit(1);
 }
 
 unsigned utils::Record::where_is(unsigned index) const
