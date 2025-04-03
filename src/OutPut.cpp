@@ -4,6 +4,10 @@
 #include <iterator>
 #include <cstring>
 #include <sstream>
+#include <limits>
+
+#include "htslib/bgzf.h"
+#include "htslib/hfile.h"
 
 #include "Arguments.hpp"
 #include "OutPut.hpp"
@@ -27,7 +31,8 @@ static void output_alterations(std::ostream &os, mutation_and_occurrences_iterat
 {
     for (bool head = true; first != last; ++first)
     {
-        if (first->second.size() < arguments::minimum_alternative_allele_count_acceptable)
+        if (first->second.size() < arguments::minimum_alternative_allele_count_acceptable ||
+            first->second.size() > arguments::maximum_alternative_allele_count_acceptable)
             continue;
 
         if (head == false) os << ',';
@@ -44,7 +49,8 @@ static void output_info(std::ostream &os, mutation_and_occurrences_iterator firs
     bool head = true;
     for (auto i = first; i != last; ++i)
     {
-        if (i->second.size() < arguments::minimum_alternative_allele_count_acceptable)
+        if (i->second.size() < arguments::minimum_alternative_allele_count_acceptable ||
+            i->second.size() > arguments::maximum_alternative_allele_count_acceptable)
             continue;
 
         if (head == false) os << ',';
@@ -113,7 +119,7 @@ static bool rep_seg_same(std :: string const &sega, std :: string const &segb, s
     return abbreviated_mutation_type == "REP" && sega == segb;
 }
 
-void output_file_head(std::ofstream &ofs, utils::MultipleAlignmentFormat const &infile)
+void output_file_head(std::stringstream &ofs, utils::MultipleAlignmentFormat const &infile)
 {
     ofs <<   "##fileformat=VCFv4.1"
         << "\n##contig=<ID=" << arguments::reference_name << ",length=" << infile.lengths[arguments::reference_index]
@@ -126,8 +132,26 @@ void output_file_head(std::ofstream &ofs, utils::MultipleAlignmentFormat const &
 
 void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer const &mutations)
 {
-    std::ofstream ofs(arguments::outfile_path);
-    if (!ofs) { std::cerr << "cannot open " << arguments::outfile_path << '\n'; exit(0); }
+    std::stringstream ofs(arguments::outfile_path);
+    std::ofstream realfile;
+    BGZF* bgzf_stream = NULL;
+    hFILE* bgz_file = NULL;
+
+    if (arguments::compress_bgz)
+    {
+        bgz_file = hopen((arguments::outfile_path + ".gz").c_str(), "w");
+        bgzf_stream = bgzf_hopen(bgz_file, "w");
+        if (bgzf_stream == NULL || bgz_file == NULL)
+        {
+            std::cerr << "Can not open gz file: " << arguments::outfile_path << ".gz" << std::endl;
+            exit(1);
+        }
+    }
+    else
+    {
+        realfile = std::ofstream(arguments::outfile_path);
+        if (! realfile) { std::cerr << "cannot open " << arguments::outfile_path << '\n'; exit(1); }
+    }
 
     auto const &names = maf.names;
     unsigned const n = names.size();
@@ -136,9 +160,16 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
     ofs << "\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT";
     if (arguments::genotype_matrix)
     {
-        ofs << '\t' << arguments::reference_name;
-        for (unsigned i = 0; i != arguments::reference_index; ++i) ofs << '\t' << names[i];
-        for (unsigned i = arguments::reference_index + 1; i != n; ++i) ofs << '\t' << names[i];
+        if(arguments::reference_name.size())
+        {
+            ofs << '\t' << arguments::reference_name;
+            for (unsigned i = 0; i != arguments::reference_index; ++i) ofs << '\t' << names[i];
+            for (unsigned i = arguments::reference_index + 1; i != n; ++i) ofs << '\t' << names[i];
+        }
+        else
+        {
+            for (unsigned i = 0; i != n; ++i) ofs << '\t' << names[i];
+        }
     }
     ofs << '\n';
 
@@ -147,7 +178,8 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
     static constexpr unsigned not_visited = std::numeric_limits<unsigned>::max();
 
     static constexpr auto acceptable = [](mut::MutationContainer::value_type const &i) -> bool
-            { return i.second.size() >= arguments::minimum_alternative_allele_count_acceptable; };
+            { return (i.second.size() >= arguments::minimum_alternative_allele_count_acceptable &&
+                      i.second.size() <= arguments::maximum_alternative_allele_count_acceptable); };
 
     for (auto i = mutations.cbegin(), j = i; i != mutations.cend(); i = j)
     {
@@ -169,14 +201,19 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
         if (variation_length < arguments::minimum_variation_length_acceptable)
             continue;
 
+        if (variation_length > arguments::maximum_variation_length_acceptable)
+            continue;
+
         if (std::count_if(i, j, acceptable) == 0)
             continue;
 
         if (rep_seg_same(mutation_delegate.reference_segment, i -> first.counterpart_segment,
                          mut::abbreviated_mutation_types[i -> first.variation_type]))
             continue;
-
-        ofs << arguments::reference_name;
+        if (arguments::reference_genome_prefix.empty())
+            ofs << arguments::reference_name;
+        else
+            ofs << maf.names[i->first.seq_id];
         ofs << '\t' << get_pos(mutation_delegate);
         ofs << "\t."
                "\t"; output_dot_if_empty(ofs, mutation_delegate.reference_segment.data());
@@ -198,7 +235,8 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
             unsigned cnt = 0;
             for (auto k = i; k != j; ++k)
             {
-                if (k->second.size() < arguments::minimum_alternative_allele_count_acceptable)
+                if (k->second.size() < arguments::minimum_alternative_allele_count_acceptable ||
+                    k->second.size() > arguments::maximum_alternative_allele_count_acceptable)
                     continue;
 
                 ++cnt;
@@ -265,7 +303,29 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
         }
 
         ofs << '\n';
+        if (arguments::compress_bgz)
+        {
+            if(bgzf_write(bgzf_stream, ofs.str().c_str(), ofs.str().length()) < 0)
+            {
+                std::cerr << "Error on writing to gz file. Program will exit." << std::endl;
+                exit(1);
+            }
+        }
+        else
+        {
+            realfile << ofs.rdbuf();
+        }
+        ofs.str("");
     }
+    if (arguments::compress_bgz)
+    {
+        if(bgzf_close(bgzf_stream))
+        {
+            std::cerr << "Error on closing gz file " << arguments::outfile_path << ".gz. Program will exit." << std::endl;
+            exit(1);
+        }
+    }
+    else realfile.close();
 }
 
 // 0-based [begin, end)
@@ -283,11 +343,12 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
 
         std::string const &reference = record.sequences[reference_index_of_record];
         unsigned const reference_offset = record.begins[reference_index_of_record];
+        auto this_begin = reference_offset, this_end = reference_offset + record.map_from_source_site.back();
         if (!(begin >= reference_offset && end <= reference_offset + record.map_to_source_site.back()))
             continue;
 
-        unsigned const l = record.map_from_source_site[begin - reference_offset] + 1;
-        unsigned const r = record.map_from_source_site[end - reference_offset] + 1;
+        unsigned const l = record.map_from_source_site[begin - this_begin] + 1;
+        unsigned const r = record.map_from_source_site[end - this_begin] + 1;
 
         utils::Fasta fasta;
         fasta.names = infile.names;
@@ -302,7 +363,7 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
         return;
     }
 
-    std::cerr << "error found when output subblock\n";
+    std::cerr << "Error: found no sub block in MAF file\n";
 }
 
 /**

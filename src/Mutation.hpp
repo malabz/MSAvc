@@ -24,6 +24,7 @@ namespace mut
 
         // zero-based indexes of the source of the reference sequence
         unsigned first, last;
+        unsigned seq_id;
 
         std::string counterpart_segment;
 
@@ -56,6 +57,8 @@ namespace mut
     void extract_mutation(MutationContainer &mutations, std::vector<std::string> const &sequences, unsigned reference_index, unsigned counterpart_index, unsigned &position);
     MutationContainer search_in(utils::MultipleAlignmentFormat const &infile, unsigned reference_index);
     MutationContainer search_in(std::vector<std::string> const &sequences, unsigned reference_index);
+    MutationContainer search_in(utils::MultipleAlignmentFormat &infile, const std::string &reference_prefix);
+    MutationContainer search_in(std::vector<std::string> const &sequences, std::vector<std::string> const &names, const std::string &reference_prefix);
 
     template<typename lhs_iter, typename rhs_iter>
     unsigned deduce_variation_type(lhs_iter lhs_first, lhs_iter lhs_last, rhs_iter rhs_first) noexcept;

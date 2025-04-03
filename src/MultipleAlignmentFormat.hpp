@@ -39,6 +39,7 @@ namespace utils
 
         std::vector<unsigned> lengths;
         std::vector<std::string> names;
+        std::vector<bool> is_prefix;
         std::unordered_map<std::string, unsigned> name_to_index;
 
         std::vector<Record> records;

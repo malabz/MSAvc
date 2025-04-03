@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <limits>
 
 #include "OutPut.hpp"
 #include "Arguments.hpp"
@@ -52,9 +53,40 @@ int main(int argc, char **argv)
     }
 
     arguments::print_arguments();
-
-    auto const mutations_and_corresponding_occurrences = mut::search_in(infile, arguments::reference_index);
-    output(infile, mutations_and_corresponding_occurrences);
+    
+    if (arguments::reference_index != std::numeric_limits<unsigned>::max() - 1)
+    {
+        auto const mutations_and_corresponding_occurrences = mut::search_in(infile, arguments::reference_index);
+        output(infile, mutations_and_corresponding_occurrences);
+    }
+    else // find reference genome prefix
+    {
+        if (arguments::infile_in_fasta)
+        {
+            auto const mutations_and_corresponding_occurrences = mut::search_in(infile.records[0].sequences, infile.names, arguments::reference_genome_prefix);
+            output(infile, mutations_and_corresponding_occurrences);
+        }
+        else
+        {
+            auto const &names_ = infile.names;
+            auto &len_         = infile.lengths;
+            auto &is_prefix    = infile.is_prefix;
+            unsigned all_lengths = 0;
+            is_prefix.resize(names_.size());
+            for(unsigned i = 0; i != names_.size(); ++ i)
+            {
+                if(names_[i].starts_with(arguments::reference_genome_prefix))
+                {
+                    is_prefix[i] = true;
+                    all_lengths += len_[i];
+                }
+            }
+            auto const mutations_and_corresponding_occurrences = mut::search_in(infile, arguments::reference_genome_prefix);
+            len_[0] = all_lengths;
+            arguments::reference_index = 0;
+            output(infile, mutations_and_corresponding_occurrences);
+        }
+    }
 
     if (arguments::sub_block)
         output_sub_block(infile, arguments::lpos, arguments::rpos);

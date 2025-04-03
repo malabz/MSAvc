@@ -81,6 +81,123 @@ mut::MutationContainer mut::search_in(utils::MultipleAlignmentFormat const &infi
     return mutations;
 }
 
+mut::MutationContainer mut::search_in(std::vector<std::string> const &sequences, std::vector<std::string> const &names, const std::string &reference_prefix)
+{
+    MutationContainer mutations;
+    // may contain multiple references
+    unsigned const row = sequences.size();
+    std::vector<bool> is_ref(row, false);
+    for (unsigned ref_id = 0; ref_id != row; ++ ref_id)
+        if(names[ref_id].starts_with(reference_prefix))
+            is_ref[ref_id] = true;
+
+    for (unsigned ref_id = 0; ref_id != row; ++ ref_id)
+    {
+        if(is_ref[ref_id])
+        {
+            std::string const &reference = sequences[ref_id];
+            unsigned const col = reference.size();
+            for (unsigned i = 0; i != row; ++i)
+            {
+                if (is_ref[i]) continue;
+
+                for (unsigned j = 0; j != col; )
+                    if (reference[j] != sequences[i][j])
+                        extract_mutation(mutations, sequences, ref_id, i, j);
+                    else
+                        ++j;
+            }
+
+        }
+    }
+    return mutations;
+}
+
+mut::MutationContainer mut::search_in(utils::MultipleAlignmentFormat &infile, const std::string &reference_prefix)
+{
+    MutationContainer mutations;
+
+    for (unsigned i = 0; i != infile.records.size(); ++i)
+    {
+        auto &record = infile.records[i];
+        unsigned const row = record.sequences.size();
+
+        unsigned reference_index_in_this_record = row;
+        bool once = false;
+        for (unsigned j = 0; j != row; ++ j)
+        {
+            if (infile.is_prefix[record.belongs[j]])
+            {
+                reference_index_in_this_record = j;
+                // assume we found once
+                if (once) { std::cerr << "Warning: found two fitted prefix. Please check the block " << i << "in maf. Program will ignore the reference\n"; }
+                once = true;
+            }
+        }
+        if (reference_index_in_this_record == row) // one record might not contain the reference sequence
+            continue;
+        // must need re-bulit this map
+        {
+            std::string const &reference = record.sequences[reference_index_in_this_record];
+            unsigned const col = reference.size();
+
+            auto &map_to = record.map_to_source_site; map_to.reserve(col + 1);
+            auto &map_from = record.map_from_source_site; map_from.reserve(col + 1);
+
+            for (unsigned i = 0; i != col; ++i)
+                if (reference[i] != '-') {
+                    map_to.push_back(map_from.size());
+                    map_from.push_back(i);
+                } else {
+                    map_to.push_back(map_from.size());
+                }
+
+            map_to.push_back(map_from.size());
+            map_from.push_back(col);
+        }
+
+        // check this block is in [lpos, rpos)
+        unsigned const offset = record.begins[reference_index_in_this_record];
+        // assert the length of sequences is same
+        /*
+        if(offset >= arguments::rpos || offset + record.sequences[0].size() < arguments::lpos && 
+           !(offset == 0 && arguments::lpos == 1))
+            continue;
+        */
+
+        std::string const &reference = record.sequences[reference_index_in_this_record];
+        unsigned const col = reference.size();
+
+        auto const &map_to_source_site = record.map_to_source_site;
+
+        MutationContainer const raw_mutations = search_in(record.sequences, reference_index_in_this_record);
+
+        for (auto const &raw_mutation : raw_mutations)
+        {
+            auto mutation = raw_mutation.first;
+            /*
+            // check this mutations is in [lpos, rpos)
+            if(map_to_source_site[mutation.first] + offset < arguments::lpos ||
+               map_to_source_site[mutation.first] + offset >= arguments::rpos &&
+               !(map_to_source_site[mutation.first] + offset == 0 && arguments::lpos == 1))
+                continue;
+            */
+            // assert reference[mutation.first] != '-'
+            mutation.first = map_to_source_site[mutation.first] + offset;
+
+            for (; mutation.last != col && reference[mutation.last] == '-'; ++mutation.last)
+                ;
+            mutation.last = map_to_source_site[mutation.last] + offset;
+
+            auto &positions = mutations[std::move(mutation)];
+            for (auto const raw_where : raw_mutation.second)
+                positions.emplace_back(i, raw_where.sequence);
+        }
+    }
+
+    return mutations;
+}
+
 unsigned mut::deduce_variation_type(char lhs, char rhs) noexcept
 {
     // assert lhs != rhs
@@ -176,7 +293,7 @@ void mut::extract_mutation(mut::MutationContainer &mutations, std::vector<std::s
     {
         mutation.front_anchored = true;
     }
-
+    mutation.seq_id = reference_index;
 
 
     // .record will be valued in the calling function

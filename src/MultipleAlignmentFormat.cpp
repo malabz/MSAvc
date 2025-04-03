@@ -66,9 +66,8 @@ void utils::MultipleAlignmentFormat::read(std::istream &is)
 
         for (; std::getline(is, line); )
         {
-            if (line.empty() || first_not_space(line) != 's')
-                break; // to do: this line should not be dropped because it might be a leading line of a record
-
+            if (line.empty()) break;
+            if (first_not_space(line) != 's') continue;
             auto const [begins, ends] = split(line);
             unsigned const n = begins.size();
             if (n < 7) format_error();

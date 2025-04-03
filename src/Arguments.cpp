@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20220924.beta";
+static char constexpr version[]                                     = "v0.1.20250403.beta";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -22,7 +22,7 @@ static char constexpr variation_type_filter_description[]           = "";
 static char constexpr variation_length_filter_description[]         = "";
 static char constexpr force_descrition[]                            = "";
 static char constexpr sub_block_description[]                       = "";
-static char constexpr check_duplicate_description[]                 = "";
+static char constexpr no_check_duplicate_description[]              = "";
 static char constexpr compress_bgz_description[]                    = "";
 static char constexpr buffer_size_description[]                     = "";
 
@@ -31,6 +31,7 @@ std::string arguments::outfile_path;
 bool arguments::infile_in_fasta;
 
 std::string arguments::reference_name;
+std::string arguments::reference_genome_prefix;
 unsigned arguments::reference_index;
 
 bool arguments::genotype_matrix;
@@ -92,6 +93,7 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     outfile_option->required();
 
     auto const reference_option = boost::program_options::value<std::string>(&reference_name);
+    auto const reference_genome_option = boost::program_options::value<std::string>(&reference_genome_prefix);
 
     auto const position_filter_begin_option = boost::program_options::value<unsigned>(&lpos);
     auto const position_filter_end_option = boost::program_options::value<unsigned>(&rpos);
@@ -117,25 +119,26 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
 
     boost::program_options::options_description desc("allowed options");
     desc.add_options()
-        ("help,h",                                                            help_description)
-        ("version,v",                                                         version_description)
-        ("in,i",              infile_option,                                  infile_description)
-        ("out,o",             outfile_option,                                 outfile_description)
-        ("reference,r",       reference_option,                               reference_description)
-        ("genotype-matrix,g",                                                 genotype_matrix_description)
-        ("nomerge-sub,n",                                                     no_merge_sub_description)
-        ("filter-begin,b",    position_filter_begin_option,                   position_filter_begin_description)
-        ("filter-end,e",      position_filter_end_option,                     position_filter_end_description)
-        ("ac-greater,c",      minimum_alternative_allele_count_filter_option, alternative_allele_count_filter_description)
-        ("ac-less,d",         maximum_alternative_allele_count_filter_option, alternative_allele_count_filter_description)
-        ("filter-vt,t",       variation_type_filter_option,                   variation_length_filter_description)
-        ("vl-greater,l",      minimum_variation_length_filter_option,         variation_length_filter_description)
-        ("vl-less,m",         maximum_variation_length_filter_option,         variation_length_filter_description)
-        ("force,f",                                                           force_descrition)
-        ("sub-block,s",                                                       sub_block_description)
-        ("duplicate-name,N",                                                  check_duplicate_description)
-        ("compress-bgz,C",                                                    compress_bgz_description)
-        ("buffer-size,B",     buffer_size_option,                             buffer_size_description)
+        ("help,h",                                                              help_description)
+        ("version,v",                                                           version_description)
+        ("in,i",                infile_option,                                  infile_description)
+        ("out,o",               outfile_option,                                 outfile_description)
+        ("reference,r",         reference_option,                               reference_description)
+        ("reference-genome,R",  reference_genome_option,                        reference_description)
+        ("genotype-matrix,g",                                                   genotype_matrix_description)
+        ("nomerge-sub,n",                                                       no_merge_sub_description)
+        ("filter-begin,b",      position_filter_begin_option,                   position_filter_begin_description)
+        ("filter-end,e",        position_filter_end_option,                     position_filter_end_description)
+        ("ac-greater,c",        minimum_alternative_allele_count_filter_option, alternative_allele_count_filter_description)
+        ("ac-less,d",           maximum_alternative_allele_count_filter_option, alternative_allele_count_filter_description)
+        ("filter-vt,t",         variation_type_filter_option,                   variation_length_filter_description)
+        ("vl-greater,l",        minimum_variation_length_filter_option,         variation_length_filter_description)
+        ("vl-less,m",           maximum_variation_length_filter_option,         variation_length_filter_description)
+        ("force,f",                                                             force_descrition)
+        ("sub-block,s",                                                         sub_block_description)
+        ("no-duplicate-name,N",                                                 no_check_duplicate_description)
+        ("compress-bgz,C",                                                      compress_bgz_description)
+        ("buffer-size,B",       buffer_size_option,                             buffer_size_description)
     ;
 
     try
@@ -156,7 +159,7 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
         force = vm.find("force") != vm.cend();
         specify_infile_format();
         sub_block = vm.find("sub-block") != vm.cend();
-        check_duplicate = vm.find("duplicate-name") != vm.cend();
+        check_duplicate = vm.find("no-duplicate-name") == vm.cend();
         compress_bgz = vm.find("compress-bgz") != vm.cend();
         if (sub_block)
             deduce_subblock_file_path();
@@ -184,12 +187,12 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     }
     catch(std::exception const &e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << ", see " << argv[0] << " --help for more information\n";
         exit(1);
     }
 
     // closed to open
-    ++rpos;
+    ++rpos; // TODO: determine this value
 }
 
 void arguments::check_arguments(utils::Fasta const &infile)
@@ -226,6 +229,11 @@ void arguments::check_arguments(utils::Fasta const &infile)
 
         if (reference_found == false)
             argument_error("reference name not found");
+    }
+    else if(reference_genome_prefix.size())
+    {
+        reference_genome_prefix += '.';
+        reference_index = std::numeric_limits<unsigned>::max() - 1;
     }
     else
     {
@@ -269,6 +277,11 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
             argument_error("reference name not found");
 
         reference_index = found->second;
+    }
+    else if(reference_genome_prefix.size())
+    {
+        reference_genome_prefix += '.';
+        reference_index = std::numeric_limits<unsigned>::max() - 1;
     }
     else
     {
@@ -334,8 +347,10 @@ void arguments::produce_help_message()
         "\n   -i, --in <inputfile>              Specify the multi-FASTA/MAF input file"
         "\n   -o, --out <outputfile>            Specify the output VCF file name"
         "\n"
-        "\n   -r, --reference <seqname>         Specify the reference genome during extracting variations "
+        "\n   -r, --reference <seqname>         Specify the reference sequence name during extracting variations "
         "\n                                     (default=the first sequence of the input file)"
+        "\n"
+        "\n   -R, --reference-genome <genome>   Specify the reference genome prefix during extracting variations"
         "\n"
         "\n   -g, --genotype-matrix             Output genotype matrix (default=off)"
         "\n"
@@ -354,7 +369,7 @@ void arguments::produce_help_message()
         "\n                                     integer: \"-c 10\" output the variations with AC>=10 (default=0)"
         "\n"
         "\n   -d, --ac-less <integer>           Filtration via the AC tag: \"-d 100\" output the variations with "
-        "\n                                     AC<100 (default=the total number of sequences)"
+        "\n                                     AC<=100 (default=the total number of sequences)"
         "\n"
         "\n   -t, --filter-vt <variationtype>   Filtration via the VT tag in the INFO column by specifying one of "
         "\n                                     sub/ins/del/rep (lowercase) flags: \"-t sub\" only output the "
@@ -364,14 +379,14 @@ void arguments::produce_help_message()
         "\n                                     integer: \"-l 5\" output the variations with VLEN>=5bp (default=0)"
         "\n"
         "\n   -m, --vl-less <integer>           Filtration via the VLEN tag: \"-m 10\" output the variations with "
-        "\n                                     VLEN<10bp (default=length of reference genome)"
+        "\n                                     VLEN<=10bp (default=length of reference genome)"
         "\n"
         "\n   -s, --sub-block                   Output MSA sub-block into FASTA file, \"-s\" option works only when "
         "\n                                     \"-b\" and \"-e\" are both specified: \"-b 24 -e 1000 -s\" produce a "
         "\n                                     sub MSA block; the slice interval is 24=<POS<=1000 in terms of "
         "\n                                     the reference genome (default=off)"
         "\n"
-        "\n   -N, --duplicate-name              Check duplicate name in file (default=off)"
+        "\n   -N, --no-duplicate-name           Do not check duplicate name in file (default=off)"
         "\n   -C, --compress-bgz                Compress the VCF output file. As the number of sequences and"
         "\n                                     variations increases, the VCF file with \"-g\" becomes super large."
         "\n"
@@ -414,8 +429,12 @@ void arguments::print_arguments()
         << "\n\t" << yes_or_no(check_duplicate)
         << "\noutput compress gz:"
         << "\n\t" << yes_or_no(compress_bgz)
-        << "\nreference name: "
-        << "\n\t" << reference_name
+        << "\n";
+    if ( reference_genome_prefix.size() ) 
+        std::cerr << "reference genome prefix: \n\t" << reference_genome_prefix;
+    else
+        std::cerr << "reference name: \n\t" << reference_name;
+    std::cerr
         << "\ngenotype matrix output: "
         << "\n\t" << yes_or_no(genotype_matrix)
         << "\ncombine like substitutions: "

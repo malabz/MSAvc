@@ -13,6 +13,7 @@ namespace arguments
     extern bool infile_in_fasta; // false if infile in maf
 
     extern std::string reference_name;
+    extern std::string reference_genome_prefix;
     extern unsigned reference_index;
 
     extern bool genotype_matrix;
