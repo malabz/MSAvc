@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20250403.beta";
+static char constexpr version[]                                     = "v0.1.20250403.beta2";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";

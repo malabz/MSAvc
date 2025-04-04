@@ -363,7 +363,7 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
         return;
     }
 
-    std::cerr << "Error: found no sub block in MAF file\n";
+    std::cerr << "Error: found no sub block in MAF file, please check the sub block arugments and run again.\n";
 }
 
 /**
