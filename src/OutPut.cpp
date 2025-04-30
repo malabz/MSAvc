@@ -335,6 +335,9 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
     --begin;
     --end;
 
+    int found_blocks = 0;
+    // std::cerr << "Begin = " << begin << "; End = " << end << std::endl;
+
     for (auto const &record : infile.records)
     {
         unsigned const reference_index_of_record = record.where_is(arguments::reference_index);
@@ -343,12 +346,19 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
 
         std::string const &reference = record.sequences[reference_index_of_record];
         unsigned const reference_offset = record.begins[reference_index_of_record];
-        auto this_begin = reference_offset, this_end = reference_offset + record.map_from_source_site.back();
-        if (!(begin >= reference_offset && end <= reference_offset + record.map_to_source_site.back()))
+
+        unsigned const overlap_begin = std::max(begin, reference_offset), overlap_end = std::min(end, reference_offset + record.map_from_source_site.back());
+
+#if 0
+        std::cerr << "Reference interval = [" << reference_offset << ", " << reference_offset + record.map_from_source_site.back() << "), "
+                  << "overlap interval = [" << overlap_begin << ", " << overlap_end << ")" << std::endl;
+#endif
+
+        if (overlap_begin > overlap_end)
             continue;
 
-        unsigned const l = record.map_from_source_site[begin - this_begin] + 1;
-        unsigned const r = record.map_from_source_site[end - this_begin] + 1;
+        unsigned const l = record.map_from_source_site[overlap_begin - reference_offset] + 1;
+        unsigned const r = record.map_from_source_site[overlap_end - reference_offset] + 1;
 
         utils::Fasta fasta;
         fasta.names = infile.names;
@@ -356,14 +366,17 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
         for (auto const &sequence : record.sequences)
             fasta.sequences.push_back(sequence.substr(l, r - l));
 
-        std::ofstream ofs(arguments::sub_block_outfile_path);
+        std::string this_block_path = arguments::sub_block_outfile_path;
+        this_block_path = this_block_path.replace(this_block_path.find('*'), 1, std::to_string(found_blocks));
+        // std::cerr << this_block_path << std::endl;
+        std::ofstream ofs(this_block_path);
         if (!ofs) { std::cerr << "cannot open " << arguments::outfile_path << '\n'; return; }
         fasta.write_to(ofs);
-
-        return;
+        
+        ++ found_blocks;
     }
 
-    std::cerr << "Error: found no sub block in MAF file, please check the sub block arugments and run again.\n";
+    if (! found_blocks) std::cerr << "Error: found no sub block in MAF file, please check the sub block arugments and run again.\n";
 }
 
 /**

@@ -31,7 +31,7 @@ namespace utils
     {
         MultipleAlignmentFormat() = default;
 
-        void read(std::istream &is);
+        void read(std::istream &is, std::string &ref);
         void read(utils::Fasta &&fasta);
         // void read(utils::Fasta const &fasta);
 

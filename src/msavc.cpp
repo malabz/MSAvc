@@ -41,7 +41,8 @@ int main(int argc, char **argv)
     }
     else
     {
-        infile.read(ifs);
+        if(arguments::reference_name.size()) infile.read(ifs, arguments::reference_name);
+        else { std::cerr << "Error: not found reference name. If you want to call genome mode please use msavc_genome. Program will exit." << std::endl; exit(1); }
         arguments::check_arguments(infile);
         infile.reverse_record_if_necessary(arguments::reference_index);
     }

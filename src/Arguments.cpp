@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20250403.beta2";
+static char constexpr version[]                                     = "v0.1.20250428.beta";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -77,7 +77,7 @@ void arguments::deduce_subblock_file_path()
     }
 
     std::filesystem::path rhs = path.parent_path();
-    rhs.append(path.stem().string() + "_subblock.fasta");
+    rhs.append(path.stem().string() + "_subblock*.fasta");
     sub_block_outfile_path = rhs.string();
 }
 
@@ -93,7 +93,6 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     outfile_option->required();
 
     auto const reference_option = boost::program_options::value<std::string>(&reference_name);
-    auto const reference_genome_option = boost::program_options::value<std::string>(&reference_genome_prefix);
 
     auto const position_filter_begin_option = boost::program_options::value<unsigned>(&lpos);
     auto const position_filter_end_option = boost::program_options::value<unsigned>(&rpos);
@@ -124,7 +123,6 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
         ("in,i",                infile_option,                                  infile_description)
         ("out,o",               outfile_option,                                 outfile_description)
         ("reference,r",         reference_option,                               reference_description)
-        ("reference-genome,R",  reference_genome_option,                        reference_description)
         ("genotype-matrix,g",                                                   genotype_matrix_description)
         ("nomerge-sub,n",                                                       no_merge_sub_description)
         ("filter-begin,b",      position_filter_begin_option,                   position_filter_begin_description)
@@ -229,11 +227,6 @@ void arguments::check_arguments(utils::Fasta const &infile)
 
         if (reference_found == false)
             argument_error("reference name not found");
-    }
-    else if(reference_genome_prefix.size())
-    {
-        reference_genome_prefix += '.';
-        reference_index = std::numeric_limits<unsigned>::max() - 1;
     }
     else
     {
@@ -341,16 +334,16 @@ void arguments::produce_help_message()
         "\n   See https://github.com/malabz/msavc for the most up-to-date documentation."
         "\n"
         "\nUsage:"
-        "\n   msavc -i <inputfile> -o <outputfile> [options]"
+        "\n   msavc -i <inputfile> -o <outputfile> -r <seqname> [options]"
         "\n"
         "\nOptions:"
         "\n   -i, --in <inputfile>              Specify the multi-FASTA/MAF input file"
         "\n   -o, --out <outputfile>            Specify the output VCF file name"
         "\n"
-        "\n   -r, --reference <seqname>         Specify the reference sequence name during extracting variations "
-        "\n                                     (default=the first sequence of the input file)"
+        "\n   -r, --reference <seqname>         Specify the reference sequence name during extracting variations"
         "\n"
         "\n   -R, --reference-genome <genome>   Specify the reference genome prefix during extracting variations"
+        "\n                                     (deprecated, please use msavc_genome)"
         "\n"
         "\n   -g, --genotype-matrix             Output genotype matrix (default=off)"
         "\n"
@@ -429,12 +422,8 @@ void arguments::print_arguments()
         << "\n\t" << yes_or_no(check_duplicate)
         << "\noutput compress gz:"
         << "\n\t" << yes_or_no(compress_bgz)
-        << "\n";
-    if ( reference_genome_prefix.size() ) 
-        std::cerr << "reference genome prefix: \n\t" << reference_genome_prefix;
-    else
-        std::cerr << "reference name: \n\t" << reference_name;
-    std::cerr
+        << "\n"
+        << "reference name: \n\t" << reference_name
         << "\ngenotype matrix output: "
         << "\n\t" << yes_or_no(genotype_matrix)
         << "\ncombine like substitutions: "

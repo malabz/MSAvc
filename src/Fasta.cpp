@@ -48,7 +48,7 @@ void utils::Fasta::_read(std::istream &is)
                     is_name = false;
                     if (arguments::check_duplicate)
                     {
-                        std::cerr << arguments::check_duplicate << std::endl;
+                        // std::cerr << arguments::check_duplicate << std::endl;
                         if (names_of_current_file.contains(tmp))
                             duplicate_name();
                         names_of_current_file.insert(tmp);
