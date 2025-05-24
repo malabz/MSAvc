@@ -11,6 +11,7 @@
 
 #include "Arguments.hpp"
 #include "OutPut.hpp"
+#define DEBUG 0
 
 static void output_dot_if_empty(std::ostream &os, char const *str)
 {
@@ -349,16 +350,21 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
 
         unsigned const overlap_begin = std::max(begin, reference_offset), overlap_end = std::min(end, reference_offset + record.map_from_source_site.back());
 
-#if 0
+#if DEBUG
         std::cerr << "Reference interval = [" << reference_offset << ", " << reference_offset + record.map_from_source_site.back() << "), "
-                  << "overlap interval = [" << overlap_begin << ", " << overlap_end << ")" << std::endl;
+                  << "overlap interval = [" << overlap_begin << ", " << overlap_end << ")\n";
 #endif
 
         if (overlap_begin > overlap_end)
             continue;
 
         unsigned const l = record.map_from_source_site[overlap_begin - reference_offset] + 1;
-        unsigned const r = record.map_from_source_site[overlap_end - reference_offset] + 1;
+        unsigned r = record.map_from_source_site[overlap_end - reference_offset] + 1;
+        if (end != overlap_end) r = record.map_from_source_site.back(); // directly print the whole block
+
+#if DEBUG
+        std::cerr << "Valid, will print " << l << " to " << r << " ? " << record.map_from_source_site[overlap_end - reference_offset] + 1 << std::endl;
+#endif
 
         utils::Fasta fasta;
         fasta.names = infile.names;

@@ -14,7 +14,7 @@ STDF = -std=c++2a
 
 MYCFLAGS =  $(STDF) $(CPPFLAGS)
 
-PROGS = msavc 
+PROGS = msavc_fasta 
 
 OBJMSAVC = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
 
@@ -23,7 +23,7 @@ OBJMSAVC = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
 all : $(PROGS)
 	@echo done.
 
-msavc : $(OBJMSAVC)
+msavc_fasta: $(OBJMSAVC)
 	$(CPP) msavc.cpp -o $@ $(OBJMSAVC) $(MYCFLAGS) -L $(LIBDIR) $(LIBS)
 
 Arguments.o: Arguments.cpp Arguments.hpp

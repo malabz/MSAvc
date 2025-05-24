@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e
+
+input_value=
+output_value=
+other_args=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -i|--in)
+      input_value="$2"
+      other_args+=("$1")
+      other_args+=("$2")
+      shift 2
+      ;;
+    -o|--out)
+      output_value="$2"
+      other_args+=("$1")
+      other_args+=("$2")
+      shift 2
+      ;;
+    -v|--version)
+      msavc_fasta --version
+      exit 0
+      ;;
+    -h|--help)
+      echo "$0 -i <input_file> -o <output_file>"
+      echo "Other arguments please see in 'msavc_fasta --help'"
+      exit 1
+      ;;
+    *)
+      other_args+=("$1")
+      shift
+      ;;
+  esac
+done
+
+echo "Input file: $input_value"
+echo "Output file: $output_value"
+echo "Other args: ${other_args[@]}"
+
+if [[ "$input_value" == "" ]]; then
+  echo "Error: no input file! Please check your arguments and run again."
+  exit 1
+fi
+
+if [[ "$output_value" == "" ]]; then
+  echo "Error: no output file! Please check your arguments and run again."
+  exit 1
+fi
+
+# TODO: test the file type, if file is fasta, call msavc_fasta; otherwise call msavc_genome
+first_lines=$(head -n 1 $input_value)
+if echo "$first_lines" | grep -q "^>"; then
+  echo "$input_value is fasta file, processing directly"
+  msavc_fasta "${other_args[@]}"
+else
+  echo "$input_value is maf file, processing by msavc_genome"
+  msavc_genome -i $input_value -o $output_value "${other_args[@]}"
+fi

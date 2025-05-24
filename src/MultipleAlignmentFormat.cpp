@@ -53,7 +53,7 @@ static char first_not_space(std::string const &str)
         return *first;
 }
 
-void utils::MultipleAlignmentFormat::read(std::istream &is)
+void utils::MultipleAlignmentFormat::read(std::istream &is, std::string &ref)
 {
     std::string line;
     for (; std::getline(is, line); )

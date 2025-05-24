@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 set -e
 
@@ -7,6 +7,7 @@ input_value=
 output_value=
 gz_mode=
 other_args=()
+has_g=
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -27,14 +28,19 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -v|--version)
-      msavc --version
+      msavc_fasta --version
       exit 0
       ;;
     -h|--help)
       echo "$0 -R <genome_name> -i <input_file> -o <output_file>"
       echo "Extra argument: -C compress final file to .gz file"
-      echo "Other arguments please see in 'msavc --help'"
+      echo "Other arguments please see in 'msavc_fasta --help'"
       exit 1
+      ;;
+    -g|--genotype-matrix)
+      has_g=1
+      other_args+=("$1")
+      shift
       ;;
     *)
       other_args+=("$1")
@@ -53,8 +59,14 @@ if [[ "$input_value" == "" ]]; then
 fi
 
 if [[ "$genome_value" == "" ]]; then
-  echo "Error: no genome name! Please check your arguments and run again."
-  exit 1
+  echo "Warning: no determined genome name, will find the first genome name"
+  genome_value=$(grep -A 1000 "^a " "$input_value" | grep "^s " | head -n 1 | awk '{print $2}' | sed 's/\..*//')
+  if [[ -z "$genome_name" ]]; then
+      echo "Info: $genome_value is the reference"
+  else
+      echo "Error: no genome name found. Program will exit."
+      exit 1
+  fi
 fi
 
 if [[ "$output_value" == "" ]]; then
@@ -86,30 +98,41 @@ else
   echo "Found and processing genomes:"
   for name in "${matched_sequences[@]}"; do
     echo "Processing $name..."
-    msavc -r $name -o $output_value-/$name.vcf -i $input_value "${other_args[@]}" -C
+    msavc_fasta -r $name -o $output_value-/$name.vcf -i $input_value "${other_args[@]}" -C
     samples=$(bcftools view -h "$output_value-/$name.vcf.gz" | grep "^#CHROM" | cut -f10-)
-    for sample in $samples; do
-      sample_set["$sample"]=1
-    done
-
+    if [[ "$has_g" == "1" ]]; then
+      echo samples=$samples "$output_value-/$name.vcf.gz"
+      for sample in $samples; do
+        sample_set["$sample"]=1
+      done
+    fi
   done
 fi
 
-> $output_value-/list-.txt
-for sample in "${!sample_set[@]}"; do
-  echo "$sample" >> $output_value-/list-.txt
-done
-sort $output_value-/list-.txt > $output_value-/list.txt
+if [[ "$has_g" == "1" ]]; then
+  > $output_value-/list-.txt
+  for sample in "${!sample_set[@]}"; do
+    echo "$sample" >> $output_value-/list-.txt
+  done
+  sort $output_value-/list-.txt > $output_value-/list.txt
+  final_file=$output_value-/final.txt
+  > $final_file
+  touch $final_file
 
+  for name in "${matched_sequences[@]}"; do
+    bcftools reheader -s $output_value-/list.txt -o $output_value-/-$name.vcf.gz $output_value-/$name.vcf.gz
+    echo "$output_value-/-$name.vcf.gz" >> $final_file
+  done
 
-final_file=$output_value-/final.txt
-> $final_file
-touch $final_file
-
-for name in "${matched_sequences[@]}"; do
-  bcftools reheader -s $output_value-/list.txt -o $output_value-/-$name.vcf.gz $output_value-/$name.vcf.gz
-  echo "$output_value-/-$name.vcf.gz" >> $final_file
-done
+else
+  # simply merge files
+  final_file=$output_value-/final.txt
+  > $final_file
+  touch $final_file
+  for name in "${matched_sequences[@]}"; do
+    echo "$output_value-/$name.vcf.gz" >> $final_file
+  done
+fi
 
 echo "file: $final_file output: $output_value $gz_mode"
 # bcftools merge -l $final_file -o $output_value $gz_mode
