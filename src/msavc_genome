@@ -52,6 +52,7 @@ while [[ $# -gt 0 ]]; do
     -b|--filter-begin|-e|--filter-end|-s|--sub-block)
       echo "$1 is deprecated in msavc_genome mode, see help for more information"
       exit 1
+      ;;
     *)
       other_args+=("$1")
       shift
