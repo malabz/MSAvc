@@ -6,6 +6,8 @@ genome_value=""
 input_value=
 output_value=
 gz_mode=
+gz_suffix=
+force_overwrite=
 other_args=()
 has_g=
 
@@ -24,7 +26,8 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     -C|--compress-bgz)
-      gz_mode="-Oz"
+      gz_mode=1
+      gz_suffix=".gz"
       shift
       ;;
     -v|--version)
@@ -42,6 +45,13 @@ while [[ $# -gt 0 ]]; do
       other_args+=("$1")
       shift
       ;;
+    -f|--force-overwrite)
+      force_overwrite="-f"
+      shift
+      ;;
+    -b|--filter-begin|-e|--filter-end|-s|--sub-block)
+      echo "$1 is deprecated in msavc_genome mode, see help for more information"
+      exit 1
     *)
       other_args+=("$1")
       shift
@@ -51,11 +61,18 @@ done
 
 echo "Genome prefix: $genome_value"
 echo "Input file: $input_value"
-echo "Output file: $output_value"
+echo "Output file: $output_value$gz_suffix"
 
 if [[ "$input_value" == "" ]]; then
   echo "Error: no input file! Please check your arguments and run again."
   exit 1
+fi
+
+if [ -f "$output_value$gz_suffix" ]; then
+  if [[ "$force_overwrite" == "" ]]; then
+    echo "file $output_value$gz_suffix exists; use --force-overwrite or -f to demand an overwrite"
+    exit 1
+  fi
 fi
 
 if [[ "$genome_value" == "" ]]; then
@@ -88,7 +105,6 @@ while read -r line; do
 done < "$input_value"
 
 matched_sequences=($(printf "%s\n" "${matched_sequences[@]}" | sort -u))
-declare -A sample_set
 mkdir -p $output_value-
 
 if [[ ${#matched_sequences[@]} -eq 0 ]]; then
@@ -98,44 +114,22 @@ else
   echo "Found and processing genomes:"
   for name in "${matched_sequences[@]}"; do
     echo "Processing $name..."
-    msavc_fasta -r $name -o $output_value-/$name.vcf -i $input_value "${other_args[@]}" -C
-    samples=$(bcftools view -h "$output_value-/$name.vcf.gz" | grep "^#CHROM" | cut -f10-)
-    if [[ "$has_g" == "1" ]]; then
-      echo samples=$samples "$output_value-/$name.vcf.gz"
-      for sample in $samples; do
-        sample_set["$sample"]=1
-      done
-    fi
+    msavc_fasta -r $name -o $output_value-/$name.vcf -i $input_value "${other_args[@]}"
   done
 fi
 
-if [[ "$has_g" == "1" ]]; then
-  > $output_value-/list-.txt
-  for sample in "${!sample_set[@]}"; do
-    echo "$sample" >> $output_value-/list-.txt
-  done
-  sort $output_value-/list-.txt > $output_value-/list.txt
-  final_file=$output_value-/final.txt
-  > $final_file
-  touch $final_file
+final_vcfs=
 
-  for name in "${matched_sequences[@]}"; do
-    bcftools reheader -s $output_value-/list.txt -o $output_value-/-$name.vcf.gz $output_value-/$name.vcf.gz
-    echo "$output_value-/-$name.vcf.gz" >> $final_file
-  done
+for name in "${matched_sequences[@]}"; do
+  final_vcfs="$final_vcfs $output_value-/$name.vcf"
+done
 
-else
-  # simply merge files
-  final_file=$output_value-/final.txt
-  > $final_file
-  touch $final_file
-  for name in "${matched_sequences[@]}"; do
-    echo "$output_value-/$name.vcf.gz" >> $final_file
-  done
+vcf_merge $final_vcfs > $output_value
+
+if [[ "$gz_mode" == "1" ]]; then
+  gzip -N $output_value $force_overwrite
 fi
 
-echo "file: $final_file output: $output_value $gz_mode"
-# bcftools merge -l $final_file -o $output_value $gz_mode
-bcftools concat -f $final_file -o $output_value $gz_mode
+echo "file: $final_file output: $output_value$gz_suffix"
 
 rm -rf $output_value-

@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20250523.beta";
+static char constexpr version[]                                     = "v0.1.20250701.beta";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -295,18 +295,18 @@ void arguments::check_arguments()
         if(! compress_bgz)
         {
             if (std::filesystem::exists(outfile_path))
-                argument_error("file " + outfile_path + " exists; use --force or -f to demand an overwrite");
+                argument_error("file " + outfile_path + " exists; use --force-overwrite or -f to demand an overwrite");
 
             if (sub_block && std::filesystem::exists(sub_block_outfile_path))
-                argument_error("file " + sub_block_outfile_path + " exists; use --force or -f to demand an overwrite");
+                argument_error("file " + sub_block_outfile_path + " exists; use --force-overwrite or -f to demand an overwrite");
         }
         else
         {
             if (std::filesystem::exists(outfile_path + ".gz"))
-                argument_error("file " + outfile_path + ".gz exists; use --force or -f to demand an overwrite");
+                argument_error("file " + outfile_path + ".gz exists; use --force-overwrite or -f to demand an overwrite");
 
             if (sub_block && std::filesystem::exists(sub_block_outfile_path + ".gz"))
-                argument_error("file " + sub_block_outfile_path + ".gz exists; use --force or -f to demand an overwrite");
+                argument_error("file " + sub_block_outfile_path + ".gz exists; use --force-overwrite or -f to demand an overwrite");
         }
     }
 }
@@ -352,11 +352,11 @@ void arguments::produce_help_message()
         "\n"
         "\n   -b, --filter-begin <integer>      Filtration via the POS column by specifying an integer in terms "
         "\n                                     of the reference genome: \"-b 24\" keep the variations with POS>=24 "
-        "\n                                     (default=1, 1-based index)"
+        "\n                                     (default=1, 1-based index) (deprecated in msavc_genome mode)"
         "\n"
         "\n   -e, --filter-end <integer>        Filtration via the POS column by specifying an integer: \"-e 1000\"" 
         "\n                                     keep the variations with POS<=1000 (default=the last base index, "
-        "\n                                     1-based index)"
+        "\n                                     1-based index) (deprecated in msavc_genome mode)"
         "\n"
         "\n   -c, --ac-greater <integer>        Filtration via the AC tag in the INFO column by specifying an "
         "\n                                     integer: \"-c 10\" output the variations with AC>=10 (default=0)"
@@ -377,7 +377,7 @@ void arguments::produce_help_message()
         "\n   -s, --sub-block                   Output MSA sub-block into FASTA file, \"-s\" option works only when "
         "\n                                     \"-b\" and \"-e\" are both specified: \"-b 24 -e 1000 -s\" produce a "
         "\n                                     sub MSA block; the slice interval is 24=<POS<=1000 in terms of "
-        "\n                                     the reference genome (default=off)"
+        "\n                                     the reference genome (default=off) (deprecated in msavc_genome mode)"
         "\n"
         "\n   -N, --no-duplicate-name           Do not check duplicate name in file (default=off)"
         "\n   -C, --compress-bgz                Compress the VCF output file. As the number of sequences and"

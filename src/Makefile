@@ -6,15 +6,15 @@ DESTDIR =
 
 CPP = g++
 #CPP = iCPP
-CPPFLAGS = -O3
+CPPFLAGS = -O3 -static
 
-LIBS = -lboost_program_options -lc -lstdc++ -ldl -lhts -lz -llzma -ldeflate -lbz2 -static
+LIBS = -lboost_program_options -lc -lstdc++ -ldl -lhts -lz -llzma -ldeflate -lbz2
 
 STDF = -std=c++2a
 
 MYCFLAGS =  $(STDF) $(CPPFLAGS)
 
-PROGS = msavc_fasta 
+PROGS = msavc_fasta vcf_merge
 
 OBJMSAVC = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
 
@@ -25,6 +25,9 @@ all : $(PROGS)
 
 msavc_fasta: $(OBJMSAVC)
 	$(CPP) msavc.cpp -o $@ $(OBJMSAVC) $(MYCFLAGS) -L $(LIBDIR) $(LIBS)
+
+vcf_merge: vcf_merge.cpp
+	$(CPP) vcf_merge.cpp -o $@ $(MYCFLAGS)
 
 Arguments.o: Arguments.cpp Arguments.hpp
 	$(CPP) $(MYCFLAGS) -c Arguments.cpp -I $(INCLUDEDIR)
