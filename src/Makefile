@@ -8,7 +8,7 @@ CPP = g++
 #CPP = iCPP
 CPPFLAGS = -O3 -static
 
-LIBS = -lboost_program_options -lc -lstdc++ -ldl -lhts -lz -llzma -ldeflate -lbz2
+LIBS = -lboost_program_options -lc -lstdc++ -ldl -lhts -lz -llzma -ldeflate -lbz2 -lpthread -ldl
 
 STDF = -std=c++2a
 
