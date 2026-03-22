@@ -119,7 +119,7 @@ void utils::Fasta::write_with_wrapping(std::ostream &os, const std::string &sequ
 
 void utils::Fasta::duplicate_name()
 {
-    std::cerr << "duplicate sequence name found\n";
+    std::cerr << "\033[31mError: duplicate sequence name found, please delete it and run again\033[0m\n";
     exit(1);
 }
 

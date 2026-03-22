@@ -50,7 +50,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -b|--filter-begin|-e|--filter-end|-s|--sub-block)
-      echo "$1 is deprecated in msavc_genome mode, see help for more information"
+      echo -e "\033[31mError: Unrecognized option $1. This option is only valid for FASTA files. Use --help for more information.\033[0m"
       exit 1
       ;;
     *)

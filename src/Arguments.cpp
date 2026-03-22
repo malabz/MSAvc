@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20260318.beta";
+static char constexpr version[]                                     = "v0.1.20260322";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -185,7 +185,14 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     }
     catch(std::exception const &e)
     {
-        std::cerr << e.what() << ", see " << argv[0] << " --help for more information\n";
+        if (strstr(e.what(), "-R"))
+        {
+            std::cerr << "\033[31mError: Unrecognized option -R. This option is only valid for MAF files. Use --help for more information.\033[0m\n";
+        }
+        else
+        {
+            std::cerr << "\033[31mError:" << e.what() << ". Use " << argv[0] << " --help for more information\033[0m\n";
+        }
         exit(1);
     }
 
@@ -246,7 +253,7 @@ void arguments::check_arguments(utils::Fasta const &infile)
 void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
 {
     if (infile.records.size() == 0) {
-        std::cerr << "maf format error\n";
+        std::cerr << "\033[31mError: maf format error, please check whether the format is correct\033[0m\n";
         exit(1);
     }
 

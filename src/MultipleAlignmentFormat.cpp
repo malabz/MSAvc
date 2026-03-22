@@ -156,7 +156,7 @@ void utils::MultipleAlignmentFormat::read(utils::Fasta &&fasta)
 
 void utils::MultipleAlignmentFormat::format_error()
 {
-    std::cerr << "maf format error\n";
+    std::cerr << "\033[31mError: maf format error, please check whether the format is correct\033[0m\n";
     exit(1);
 }
 
