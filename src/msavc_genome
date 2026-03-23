@@ -49,7 +49,7 @@ while [[ $# -gt 0 ]]; do
       force_overwrite="-f"
       shift
       ;;
-    -b|--filter-begin|-e|--filter-end|-s|--sub-block)
+    -b|--filter-begin|-e|--filter-end|-s|--sub-block|-r|--reference)
       echo -e "\033[31mError: Unrecognized option $1. This option is only valid for FASTA files. Use --help for more information.\033[0m"
       exit 1
       ;;
