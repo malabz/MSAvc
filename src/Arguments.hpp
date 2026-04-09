@@ -49,7 +49,7 @@ namespace arguments
     void argument_error(std::string const &message);
 
     void produce_version_message();
-    void produce_help_message();
+    void produce_help_message(const int &mode);
 
     void specify_infile_format();
     void deduce_subblock_file_path();

@@ -10,11 +10,14 @@ gz_suffix=
 force_overwrite=
 other_args=()
 has_g=
+has_r=0
+has_R=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -R)
+    -R|--reference-genome)
       genome_value="$2"
+      has_R=1
       shift 2
       ;;
     -i|--in)
@@ -35,9 +38,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     -h|--help)
-      echo "$0 -R <genome_name> -i <input_file> -o <output_file>"
-      echo "Extra argument: -C compress final file to .gz file"
-      echo "Other arguments please see in 'msavc_fasta --help'"
+      ./msavc_fasta --helpgenome
       exit 1
       ;;
     -g|--genotype-matrix)
@@ -49,9 +50,10 @@ while [[ $# -gt 0 ]]; do
       force_overwrite="-f"
       shift
       ;;
-    -b|--filter-begin|-e|--filter-end|-s|--sub-block|-r|--reference)
-      echo -e "\033[31mError: Unrecognized option $1. This option is only valid for FASTA files. Use --help for more information.\033[0m"
-      exit 1
+    -r|--reference)
+      has_r=1
+      other_args+=("$1")
+      shift
       ;;
     *)
       other_args+=("$1")
@@ -59,6 +61,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ "$has_r" == "1" && "$has_R" == "1" ]]; then
+    echo -e "\033[31mError: -R conflicts with -r. Please check your arguments and run again.\033[0m"
+    exit 1
+fi
 
 echo "Genome prefix: $genome_value"
 echo "Input file: $input_value"

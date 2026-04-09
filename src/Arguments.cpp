@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20260403.beta";
+static char constexpr version[]                                     = "v0.1.20260409";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -119,6 +119,8 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     boost::program_options::options_description desc("allowed options");
     desc.add_options()
         ("help,h",                                                              help_description)
+        ("helpmain,<",                                                          help_description)
+        ("helpgenome,>",                                                        help_description)
         ("version,v",                                                           version_description)
         ("in,i",                infile_option,                                  infile_description)
         ("out,o",               outfile_option,                                 outfile_description)
@@ -145,10 +147,14 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
         boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
 
         bool const help_flag = vm.find("help") != vm.cend();
+        bool const help_main_flag = vm.find("helpmain") != vm.cend();
+        bool const help_genome_flag = vm.find("helpgenome") != vm.cend();
         bool const version_flag = vm.find("version") != vm.cend();
-        if (help_flag) produce_help_message();
+        if (help_flag) produce_help_message(0);
+        if (help_main_flag) produce_help_message(1);
+        if (help_genome_flag) produce_help_message(2);
         if (version_flag) produce_version_message();
-        if (help_flag || version_flag) exit(0);
+        if (help_flag || help_main_flag || help_genome_flag || version_flag) exit(0);
 
         boost::program_options::notify(vm);
 
@@ -191,7 +197,7 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
         }
         else
         {
-            std::cerr << "\033[31mError:" << e.what() << ". Use " << argv[0] << " --help for more information\033[0m\n";
+            std::cerr << "\033[31mError: " << e.what() << ". Use " << argv[0] << " --help for more information\033[0m\n";
         }
         exit(1);
     }
@@ -334,32 +340,43 @@ void arguments::produce_version_message()
     std::cerr << version << '\n';
 }
 
-void arguments::produce_help_message()
+void arguments::produce_help_message(const int &mode)
 {
-    std::cerr << "msavc " << version <<
+    const std::string program_name[] = {"msavc_fasta", "msavc", "msavc_genome"};
+    const std::string support_format[] = {"FASTA", "FASTA/MAF", "MAF"};
+    std::cerr << program_name[mode] << " " << version <<
         "\n   MSAvc: variation calling for genome-scale multiple sequence alignments, "
         "\n   applicable to FASTA format files and Multiple Alignment Format(MAF) files."
         "\n   See https://github.com/malabz/msavc for the most up-to-date documentation."
         "\n"
-        "\nUsage:"
-        "\n   msavc -i <inputfile> -o <outputfile> [options]"
-        "\n"
+        "\nUsage:" 
+        "\n   " << program_name[mode] << " -i <inputfile> -o <outputfile> [options]"
+        // << (mode == 1 ? "\n   Auto detect the format of input file" : "")
+        << "\n"
         "\nOptions:"
-        "\n   -i, --in <inputfile>              Input FASTA/MAF file"
+        "\n   -i, --in <inputfile>              Input " << support_format[mode] << " file"
         "\n   -o, --out <outputfile>            Output VCF file"
-        "\n   -r, --reference <seqname>         Reference sequence name (FASTA only)"
-        "\n   -R, --reference-genome <prefix>   Reference genome prefix (MAF only)"
-        "\n   -g, --genotype-matrix             Output genotype matrix (default: off)"
+        "\n   -r, --reference <seqname>"
+        << (mode == 1 ? "\n       Reference sequence name: for FASTA, provide the sequence name; for "
+        "\n       MAF, provide species.chromosome (e.g., hg38.chr1), and -r is combined "
+        "\n       with -b, -e, -s to filter the output VCF or extract sub-block of MAF. "
+        "\n       Note: -r and -R are mutually exclusive when processing MAF files." : "")
+        << (mode == 2 ?  "\n      Reference species.chromosome (e.g., hg38.chr1), and -r is combined "
+        "\n       with -b, -e, -s to filter the output VCF or extract sub-block of MAF. "
+        "\n       Note: -r and -R are mutually exclusive when processing MAF files." : "")
+        << (!mode ? "       Reference sequence name" : "")
+        << "\n"
+        << (mode ? "\n   -R, --reference-genome <prefix>   Reference genome prefix (MAF only)" : "")
+        << "\n   -g, --genotype-matrix             Output genotype matrix (default: off)"
         "\n"
         "\n   -n, --nomerge-sub"
-        "\n       Do not merge SUB variations at same position (default: off)"
+        "\n       Do not merge SUB variations at the same position (default: off)"
         "\n"
         "\n   -b, --filter-begin <int>"
-        "\n       Filter by min POS value (e.g., -b 24: POS>=24) (FASTA only, default: 1)"
+        "\n       Filter by min POS value (e.g., -b 24: POS>=24) (default: 1)"
         "\n"
         "\n   -e, --filter-end <int>" 
-        "\n       Filter by max POS value (e.g., -e 1000: POS<=1000) (FASTA only, "
-        "\n       default: last base)"
+        "\n       Filter by max POS value (e.g., -e 1000: POS<=1000) (default: last base)"
         "\n"
         "\n   -c, --ac-greater <int>"
         "\n       Filter by min AC value (e.g., -c 10: AC>=10) (default: 0)"

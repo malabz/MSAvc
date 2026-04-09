@@ -365,22 +365,20 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
 #if DEBUG
         std::cerr << "Valid, will print " << l << " to " << r << " ? " << record.map_from_source_site[overlap_end - reference_offset] + 1 << std::endl;
 #endif
-        // TODO: need to check names of FASTA block are same as MAF block
         utils::Fasta fasta;
-        // TODO: check if it is right, wrong code : fasta.names = infile.names;
-        // maybe the code is right
         fasta.names.reserve(record.sequences.size());
         for (auto const &name_id : record.belongs)
             fasta.names.emplace_back(infile.names[name_id]);
-        // TODO: check block end
         fasta.sequences.reserve(record.sequences.size());
         for (auto const &sequence : record.sequences)
             fasta.sequences.push_back(sequence.substr(l, r - l));
-        
+
+#if DEBUG
         for (auto const &Name : fasta.names)
             std::cerr << Name << std::endl;
         for (auto const &seq : record.belongs)
             std::cerr << seq << ' ' << infile.names[seq] << std::endl;
+#endif
 
         std::string this_block_path = arguments::sub_block_outfile_path;
         this_block_path = this_block_path.replace(this_block_path.find('*'), 1, std::to_string(found_blocks));
