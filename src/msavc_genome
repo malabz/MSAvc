@@ -38,7 +38,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     -h|--help)
-      ./msavc_fasta --helpgenome
+      msavc_fasta --helpgenome
       exit 1
       ;;
     -g|--genotype-matrix)

@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20260409";
+static char constexpr version[]                                     = "v0.1.20260415";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -364,7 +364,7 @@ void arguments::produce_help_message(const int &mode)
         << (mode == 2 ?  "\n      Reference species.chromosome (e.g., hg38.chr1), and -r is combined "
         "\n       with -b, -e, -s to filter the output VCF or extract sub-block of MAF. "
         "\n       Note: -r and -R are mutually exclusive when processing MAF files." : "")
-        << (!mode ? "       Reference sequence name" : "")
+        << (!mode ? "         Reference sequence name" : "")
         << "\n"
         << (mode ? "\n   -R, --reference-genome <prefix>   Reference genome prefix (MAF only)" : "")
         << "\n   -g, --genotype-matrix             Output genotype matrix (default: off)"
