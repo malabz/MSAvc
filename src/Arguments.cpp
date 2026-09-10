@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20260415";
+static char constexpr version[]                                     = "v0.1.20260901";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -203,7 +203,7 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     }
 
     // closed to open
-    ++rpos; // TODO: determine this value
+    ++rpos;
 }
 
 void arguments::check_arguments(utils::Fasta const &infile)
@@ -253,6 +253,12 @@ void arguments::check_arguments(utils::Fasta const &infile)
     if (lpos >= col)
         argument_error("position index out of bounds");
 
+    if (maximum_alternative_allele_count_acceptable == std::numeric_limits<unsigned>::max() - 1)
+        maximum_alternative_allele_count_acceptable = infile.sequences.size();
+    
+    if (maximum_variation_length_acceptable == std::numeric_limits<unsigned>::max() - 1)
+        maximum_variation_length_acceptable = infile.sequences[0].size();
+
     check_arguments();
 }
 
@@ -263,6 +269,7 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
         exit(1);
     }
 
+    unsigned max_records = 0, max_length = 0, rlim = 0, llim = std::numeric_limits<unsigned>::max() - 1;
     for (auto const &record : infile.records)
     {
         unsigned const row = record.sequences.size();
@@ -270,11 +277,17 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
 
         unsigned const col = record.sequences[0].size();
         for (unsigned i = 1; i != row; ++i)
+        {
             if (record.sequences[i].size() != col) {
                 std::cerr << "sequences not with the same length\n";
                 exit(1);
             }
+            llim = (std::min)(llim, record.begins[i]);
+            rlim = (std::max)(rlim, record.begins[i] + col);
+        }
+        max_length = (std::max)(max_length, static_cast<unsigned>(record.sequences[0].size()));
     }
+    max_records = static_cast<unsigned>(infile.name_to_index.size());
 
     if (reference_name.size())
     {
@@ -294,6 +307,16 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
         reference_index = 0;
         reference_name = infile.names[0];
     }
+
+
+    if (maximum_alternative_allele_count_acceptable == std::numeric_limits<unsigned>::max() - 1)
+        maximum_alternative_allele_count_acceptable = max_records;
+    
+    if (maximum_variation_length_acceptable == std::numeric_limits<unsigned>::max() - 1)
+        maximum_variation_length_acceptable = max_length;
+    
+    lpos = llim;
+    rpos = rlim;
 
     check_arguments();
 }
@@ -346,7 +369,7 @@ void arguments::produce_help_message(const int &mode)
     const std::string support_format[] = {"FASTA", "FASTA/MAF", "MAF"};
     std::cerr << program_name[mode] << " " << version <<
         "\n   MSAvc: variation calling for genome-scale multiple sequence alignments, "
-        "\n   applicable to FASTA format files and Multiple Alignment Format(MAF) files."
+        "\n   applicable to FASTA format files and Multiple Alignment Format (MAF) files."
         "\n   See https://github.com/malabz/msavc for the most up-to-date documentation."
         "\n"
         "\nUsage:" 
@@ -370,7 +393,8 @@ void arguments::produce_help_message(const int &mode)
         << "\n   -g, --genotype-matrix             Output genotype matrix (default: off)"
         "\n"
         "\n   -n, --nomerge-sub"
-        "\n       Do not merge SUB variations at the same position (default: off)"
+        "\n       Disable merging of SUB variants that share the same position and length"
+        "\n       (default: off)"
         "\n"
         "\n   -b, --filter-begin <int>"
         "\n       Filter by min POS value (e.g., -b 24: POS>=24) (default: 1)"
@@ -402,7 +426,8 @@ void arguments::produce_help_message(const int &mode)
         "\n       only, default: 1048576)"
         "\n"
         "\n   -N, --no-duplicate-name           Skip duplicate name check (default: off)"
-        "\n   -C, --compress-bgz                Compress VCF output with bgzip"
+        "\n   -C, --compress-bgz                Compress VCF output with bgzip (default: "
+        "\n                                     off)"
         "\n   -f, --force-overwrite             Overwrite existing files (default: off)"
         "\n   -h, --help                        Display help information"
         "\n   -v, --version                     Print version"
