@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <cstdint>
+
 #include "Fasta.hpp"
 #include "MultipleAlignmentFormat.hpp"
 
@@ -20,13 +22,13 @@ namespace arguments
     extern bool combine_like_substitutions;
 
     // [lpos : rpos)
-    extern unsigned lpos; // open
-    extern unsigned rpos; // close
+    extern std::uint64_t lpos; // open
+    extern std::uint64_t rpos; // close
 
-    extern unsigned minimum_alternative_allele_count_acceptable;
-    extern unsigned maximum_alternative_allele_count_acceptable;
-    extern unsigned minimum_variation_length_acceptable;
-    extern unsigned maximum_variation_length_acceptable;
+    extern std::uint64_t minimum_alternative_allele_count_acceptable;
+    extern std::uint64_t maximum_alternative_allele_count_acceptable;
+    extern std::uint64_t minimum_variation_length_acceptable;
+    extern std::uint64_t maximum_variation_length_acceptable;
     extern bool variation_type_acceptable[];
 
     extern bool force;

@@ -1,53 +1,46 @@
-#ENVNAME = package
-PREFIX = /Users/furongtang/anaconda3
+# conda 环境根目录
+PREFIX     ?= $(CONDA_PREFIX)
 INCLUDEDIR = $(PREFIX)/include
-LIBDIR = $(PREFIX)/lib
-DESTDIR = 
+LIBDIR     = $(PREFIX)/lib
 
-CPP = clang++
-#CPP = iCPP
-CPPFLAGS = -O3
-# -static
+CPP      = $(CXX)                    
+CPPFLAGS = -O3 -I$(PREFIX)/include
 
-LIBS = -lboost_program_options -lbz2 -ltcmalloc -lhts
-# LIBS = ../lib/libboost_program_options.dylib
+LIBS = -Wl,-rpath,$(LIBDIR) -L$(LIBDIR) \
+       -lboost_program_options -lhts -lz -llzma -ldeflate -lbz2
 
-STDF = -std=c++2a
+STDF       = -std=c++20
+MYCFLAGS   = $(STDF) $(CPPFLAGS)
 
-#MACLIBS = -lstdc++
-
-MYCFLAGS =  $(STDF) $(CPPFLAGS)
-
-PROGS = msavc 
-
-OBJMSAVC = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
-
-# HEADER = 
+PROGS      = msavc_fasta vcf_merge
+OBJMSAVC   = Arguments.o Fasta.o MultipleAlignmentFormat.o Mutation.o OutPut.o
 
 all : $(PROGS)
-	install_name_tool -change "@rpath/libboost_program_options.dylib" "@executable_path/../lib/libboost_program_options.dylib" msavc 
 	@echo done.
 
-msavc : $(OBJMSAVC)
-	$(CPP) msavc.cpp -o $@ $(OBJMSAVC) $(MYCFLAGS)  -L $(LIBDIR) $(LIBS) $(MACLIBS)
+msavc_fasta: $(OBJMSAVC)
+	$(CPP) msavc.cpp -o $@ $(OBJMSAVC) $(MYCFLAGS) $(LIBS)
 
-Arguments.o: Arguments.cpp Arguments.hpp
-	$(CPP) $(MYCFLAGS) -c Arguments.cpp -I $(INCLUDEDIR) $(MACLIBS)
+vcf_merge: vcf_merge.cpp
+	$(CPP) vcf_merge.cpp -o $@ $(MYCFLAGS) $(LIBS)
 
-Fasta.o : Fasta.cpp Fasta.hpp
-	$(CPP) $(MYCFLAGS) -c Fasta.cpp $(MACLIBS)
+Arguments.o: Arguments.cpp Arguments.hpp Fasta.hpp MultipleAlignmentFormat.hpp
+	$(CPP) $(MYCFLAGS) -c Arguments.cpp
 
-MultipleAlignmentFormat.o : MultipleAlignmentFormat.cpp MultipleAlignmentFormat.hpp
-	$(CPP) $(MYCFLAGS) -c MultipleAlignmentFormat.cpp $(MACLIBS)
+Fasta.o: Fasta.cpp Fasta.hpp
+	$(CPP) $(MYCFLAGS) -c Fasta.cpp
 
-Mutation.o : Mutation.cpp Mutation.hpp
-	$(CPP) $(MYCFLAGS) -c Mutation.cpp $(MACLIBS)
+MultipleAlignmentFormat.o: MultipleAlignmentFormat.cpp MultipleAlignmentFormat.hpp Fasta.hpp
+	$(CPP) $(MYCFLAGS) -c MultipleAlignmentFormat.cpp
 
-OutPut.o : OutPut.cpp OutPut.hpp
-	$(CPP) $(MYCFLAGS) -c OutPut.cpp $(MACLIBS)
+Mutation.o: Mutation.cpp Mutation.hpp Fasta.hpp MultipleAlignmentFormat.hpp
+	$(CPP) $(MYCFLAGS) -c Mutation.cpp
 
-msavc.o: msavc.cpp OutPut.hpp Arguments.hpp
-	$(CPP) $(MYCFLAGS) -c msavc.cpp $(MACLIBS)
+OutPut.o: OutPut.cpp OutPut.hpp Mutation.hpp Fasta.hpp MultipleAlignmentFormat.hpp
+	$(CPP) $(MYCFLAGS) -c OutPut.cpp
 
-clean :
+msavc.o: msavc.cpp OutPut.hpp Arguments.hpp Fasta.hpp MultipleAlignmentFormat.hpp Mutation.hpp
+	$(CPP) $(MYCFLAGS) -c msavc.cpp
+
+clean:
 	rm -f *.o *~ $(PROGS)

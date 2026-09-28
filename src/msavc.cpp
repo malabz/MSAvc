@@ -1,9 +1,8 @@
-// This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <fstream>
 #include <algorithm>
 #include <limits>
+#include <cstddef>
+#include <cstdint>
 
 #include "OutPut.hpp"
 #include "Arguments.hpp"
@@ -11,7 +10,7 @@
 static void standardize(std::string &str)
 {
     str.resize(str.size() + 1);
-    for (unsigned i = str.size() - 1; i != 0; --i)
+    for (std::size_t i = str.size() - 1; i != 0; --i)
         str[i] = std::tolower(str[i - 1]);
     str.front() = '^';
 }
@@ -29,7 +28,7 @@ int main(int argc, char **argv)
     arguments::parse_arguments(argc, argv);
 
     std::ifstream ifs(arguments::infile_path);
-    if (!ifs) { std::cerr << "cannot access file " << arguments::infile_path << '\n'; exit(1); }
+    if (!ifs) {std::cerr << "\033[31mcannot access file " << arguments::infile_path << "\033[0m\n";exit(1);}
 
     utils::MultipleAlignmentFormat infile;
  
@@ -42,7 +41,7 @@ int main(int argc, char **argv)
     else
     {
         if(arguments::reference_name.size()) infile.read(ifs, arguments::reference_name);
-        else { std::cerr << "Error: not found reference name. If you want to call genome mode please use msavc_genome. Program will exit." << std::endl; exit(1); }
+        else {std::cerr << "\033[31mError: not found reference name. If you want to call genome mode please use msavc_genome. Program will exit.\033[0m" << std::endl;exit(1);}
         arguments::check_arguments(infile);
         infile.reverse_record_if_necessary(arguments::reference_index);
     }
@@ -72,7 +71,7 @@ int main(int argc, char **argv)
             auto const &names_ = infile.names;
             auto &len_         = infile.lengths;
             auto &is_prefix    = infile.is_prefix;
-            unsigned all_lengths = 0;
+            std::uint64_t all_lengths = 0;
             is_prefix.resize(names_.size());
             for(unsigned i = 0; i != names_.size(); ++ i)
             {

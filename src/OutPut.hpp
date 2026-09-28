@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "Mutation.hpp"
@@ -9,4 +10,4 @@
 void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer const &mutations);
 
 // 0-based [begin, end)
-void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned begin, unsigned end);
+void output_sub_block(utils::MultipleAlignmentFormat const &infile,std::uint64_t begin, std::uint64_t end);

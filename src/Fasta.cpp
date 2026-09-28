@@ -1,5 +1,6 @@
 #include <cstring>
 #include <unordered_set>
+#include <cstddef>
 
 #include "Fasta.hpp"
 #include "Arguments.hpp"
@@ -33,7 +34,7 @@ void utils::Fasta::_read(std::istream &is)
     char * buffer = new char [arguments::buffer_size + 1];
     int blocks = 0;
     bool is_name = false, flag = false;
-    // read data as so many blocks
+// read data as so many blocks
     while(true)
     {
         is.read(buffer, arguments::buffer_size);
@@ -42,13 +43,13 @@ void utils::Fasta::_read(std::istream &is)
             if(buffer[bi] == '\r') continue;
             if(buffer[bi] == '\n')
             {
-                if(! is_name) continue; // this \n is in the sequence
+                if(! is_name) continue;
                 else
                 {
                     is_name = false;
                     if (arguments::check_duplicate)
                     {
-                        // std::cerr << arguments::check_duplicate << std::endl;
+// std::cerr << arguments::check_duplicate << std::endl;
                         if (names_of_current_file.contains(tmp))
                             duplicate_name();
                         names_of_current_file.insert(tmp);
@@ -58,7 +59,7 @@ void utils::Fasta::_read(std::istream &is)
             }
             else if(buffer[bi] == '>')
             {
-                // here, this string will become sequence name
+// here, this string will become sequence name
                 is_name = true;
                 if(flag) sequences.emplace_back(std::move(tmp));
                 flag = true;
@@ -71,19 +72,17 @@ void utils::Fasta::_read(std::istream &is)
     delete[] buffer;
 }
 
-
-
 void utils::Fasta::write_with_wrapping(std::stringstream &ss, const std::string &sequence)
 {
-    const unsigned sequence_length = sequence.size();
+    const std::size_t sequence_length = sequence.size();
 
     char *cut_sequence = new char[sequence_length + sequence_length / max_line_length + 1];
-    unsigned des_index = 0;
-    for (unsigned src_index = 0; src_index < sequence_length; src_index += max_line_length)
+    std::size_t des_index = 0;
+    for (std::size_t src_index = 0; src_index < sequence_length; src_index += max_line_length)
     {
         if (src_index) cut_sequence[des_index++] = '\n';
 
-        unsigned write_length = sequence_length - src_index;
+        std::size_t write_length = sequence_length - src_index;
         if (write_length > max_line_length) write_length = max_line_length;
 
         memcpy(cut_sequence + des_index, sequence.data() + src_index, write_length);
@@ -97,15 +96,15 @@ void utils::Fasta::write_with_wrapping(std::stringstream &ss, const std::string 
 
 void utils::Fasta::write_with_wrapping(std::ostream &os, const std::string &sequence)
 {
-    const unsigned sequence_length = sequence.size();
+    const std::size_t sequence_length = sequence.size();
 
     char *cut_sequence = new char[sequence_length + sequence_length / max_line_length + 1];
-    unsigned des_index = 0;
-    for (unsigned src_index = 0; src_index < sequence_length; src_index += max_line_length)
+    std::size_t des_index = 0;
+    for (std::size_t src_index = 0; src_index < sequence_length; src_index += max_line_length)
     {
         if (src_index) cut_sequence[des_index++] = '\n';
 
-        unsigned write_length = sequence_length - src_index;
+        std::size_t write_length = sequence_length - src_index;
         if (write_length > max_line_length) write_length = max_line_length;
 
         memcpy(cut_sequence + des_index, sequence.data() + src_index, write_length);
@@ -125,6 +124,6 @@ void utils::Fasta::duplicate_name()
 
 void utils::Fasta::pre_length_error()
 {
-    std::cerr << "sequence length is different\n";
+    std::cerr << "\033[31msequence length is different\033[0m\n";
     exit(1);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <unordered_map>
 #include <array>
@@ -15,16 +16,17 @@ namespace utils
     {
         std::vector<std::string> sequences;
         std::vector<bool> forward;
-        std::vector<unsigned> begins;
+        std::vector<std::uint64_t> begins;          // <-- 改：源坐标
 
-        std::vector<unsigned> belongs;
+        std::vector<unsigned> belongs;              // <-- 保持：序列索引
         unsigned where_is(unsigned index) const;
 
-        std::vector<unsigned> map_to_source_site;
-        std::vector<unsigned> map_from_source_site;
+        std::vector<std::uint64_t> map_to_source_site;    // <-- 改
+        std::vector<std::uint64_t> map_from_source_site;  // <-- 改
         void build_map_if_necessary(unsigned reference_index);
 
-        void reverse(std::vector<unsigned> const &lengths_of_parent_sequences, std::array<char, 128> const &map_to_complemented) noexcept;
+        void reverse(std::vector<std::uint64_t> const &lengths_of_parent_sequences,
+                     std::array<char, 128> const &map_to_complemented) noexcept;
     };
 
     struct MultipleAlignmentFormat
@@ -33,11 +35,10 @@ namespace utils
 
         void read(std::istream &is, std::string &ref);
         void read(utils::Fasta &&fasta);
-        // void read(utils::Fasta const &fasta);
 
         static void format_error();
 
-        std::vector<unsigned> lengths;
+        std::vector<std::uint64_t> lengths;         // <-- 改：真实染色体长度
         std::vector<std::string> names;
         std::vector<bool> is_prefix;
         std::unordered_map<std::string, unsigned> name_to_index;
@@ -48,7 +49,6 @@ namespace utils
 
         void reverse_record_if_necessary(unsigned reference_index) noexcept;
 
-        // to do: static is not good
         static std::array<char, 128> construct_map_to_complemented();
     };
 

@@ -1,31 +1,48 @@
 #!/bin/bash
+set -euo pipefail
 
-set -e
-
-genome_value=""
-input_value=
-output_value=
-gz_mode=
-gz_suffix=
-force_overwrite=
+# ---------- 全局变量与清理 ----------
+genome_prefix=""
+input_file=""
+output_file=""
+gz_mode=0
+gz_suffix=""
+force_overwrite=0
 other_args=()
-has_g=
 has_r=0
 has_R=0
+has_b=0
+has_e=0
+has_s=0
+ref_single=""
+has_g=0
 
+base_dir=""
+maf_temp_dir=""
+
+cleanup() {
+    local rc=$?
+    if [[ -n "$maf_temp_dir" && -d "$maf_temp_dir" ]]; then
+        rm -rf "$maf_temp_dir"
+    fi
+    exit $rc
+}
+trap cleanup EXIT INT TERM
+
+# ---------- 解析参数 ----------
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -R|--reference-genome)
-      genome_value="$2"
+      genome_prefix="$2"
       has_R=1
       shift 2
       ;;
     -i|--in)
-      input_value="$2"
+      input_file="$2"
       shift 2
       ;;
     -o|--out)
-      output_value="$2"
+      output_file="$2"
       shift 2
       ;;
     -C|--compress-bgz)
@@ -46,14 +63,30 @@ while [[ $# -gt 0 ]]; do
       other_args+=("$1")
       shift
       ;;
+    -b|--filter-begin)
+      has_b=1
+      other_args+=("$1" "$2")
+      shift 2
+      ;;
+    -e|--filter-end)
+      has_e=1
+      other_args+=("$1" "$2")
+      shift 2
+      ;;
+    -s|--sub-block)
+      has_s=1
+      other_args+=("$1")
+      shift
+      ;;
     -f|--force-overwrite)
-      force_overwrite="-f"
+      force_overwrite=1
+      other_args+=("-f")
       shift
       ;;
     -r|--reference)
       has_r=1
-      other_args+=("$1")
-      shift
+      ref_single="$2"
+      shift 2
       ;;
     *)
       other_args+=("$1")
@@ -62,82 +95,192 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# ---------- 参数检查 ----------
 if [[ "$has_r" == "1" && "$has_R" == "1" ]]; then
-    echo -e "\033[31mError: -R conflicts with -r. Please check your arguments and run again.\033[0m"
+    echo -e "\033[31mError: -R conflicts with -r. Please check your arguments.\033[0m" >&2
     exit 1
 fi
 
-echo "Genome prefix: $genome_value"
-echo "Input file: $input_value"
-echo "Output file: $output_value$gz_suffix"
+if [[ "$has_r" == "0" && ( "$has_b" == "1" || "$has_e" == "1" || "$has_s" == "1" ) ]]; then
+    echo -e "\033[31mError: -b/-e/-s requires -r in MAF mode. Each reference chromosome has its own coordinate system, so a single POS interval cannot apply to multiple chromosomes. Please specify -r <reference> to select one chromosome.\033[0m" >&2
+    exit 1
+fi
 
-if [[ "$input_value" == "" ]]; then
-  echo "Error: no input file! Please check your arguments and run again."
+if [[ -z "$input_file" ]]; then
+  echo -e "\033[31mError: no input file!\033[0m" >&2
   exit 1
 fi
 
-if [ -f "$output_value$gz_suffix" ]; then
-  if [[ "$force_overwrite" == "" ]]; then
-    echo "file $output_value$gz_suffix exists; use --force-overwrite or -f to demand an overwrite"
+if [[ -z "$output_file" ]]; then
+  echo -e "\033[31mError: no output file!\033[0m" >&2
+  exit 1
+fi
+
+if [[ ! -f "$input_file" ]]; then
+  echo -e "\033[31mError: input file '$input_file' does not exist.\033[0m" >&2
+  exit 1
+fi
+
+# ---------- 推断基因组前缀 ----------
+if [[ "$has_R" == "0" && "$has_r" == "0" ]]; then
+  first_seq=$(grep -m1 "^s " "$input_file" | awk '{print $2}')
+  if [[ -z "$first_seq" ]]; then
+    echo -e "\033[31mError: cannot find any sequence line in MAF.\033[0m" >&2
     exit 1
   fi
+  genome_prefix="${first_seq%%.*}"
+  has_R=1
 fi
 
-if [[ "$genome_value" == "" ]]; then
-  echo "Warning: no determined genome name, will find the first genome name"
-  genome_value=$(grep -A 1000 "^a " "$input_value" | grep "^s " | head -n 1 | awk '{print $2}' | sed 's/\..*//')
-  if [[ -z "$genome_name" ]]; then
-      echo "Info: $genome_value is the reference"
-  else
-      echo "Error: no genome name found. Program will exit."
-      exit 1
-  fi
-fi
-
-if [[ "$output_value" == "" ]]; then
-  echo "Error: no output file! Please check your arguments and run again."
-  exit 1
-fi
-
-# process match sequences
-matched_sequences=()
-
-while read -r line; do
-  if [[ "$line" == s\ * ]]; then
-    seq_name=$(echo "$line" | awk '{print $2}')
-    prefix=$(echo "$seq_name" | cut -d'.' -f1)
-    if [[ "$prefix" == "$genome_value" ]]; then
-      matched_sequences+=("$seq_name")
-    fi
-  fi
-done < "$input_value"
-
-matched_sequences=($(printf "%s\n" "${matched_sequences[@]}" | sort -u))
-mkdir -p $output_value-
-
-if [[ ${#matched_sequences[@]} -eq 0 ]]; then
-  echo "Not found $genome_value. Please check your arguments and try again."
-  exit 1
+# ---------- 收集参考序列名 ----------
+if [[ "$has_r" == "1" ]]; then
+  ref_names=("$ref_single")
 else
-  echo "Found and processing genomes:"
-  for name in "${matched_sequences[@]}"; do
-    echo "Processing $name..."
-    msavc_fasta -r $name -o $output_value-/$name.vcf -i $input_value "${other_args[@]}"
-  done
+  ref_names=()
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && ref_names+=("$line")
+  done < <(
+    LC_ALL=C grep -oE '^s[ \t]+[^ \t]+' "$input_file" \
+    | LC_ALL=C awk -v prefix="$genome_prefix" \
+        'index($2, prefix ".") == 1 { print $2 }' \
+    | LC_ALL=C sort -u
+  )
+  if [[ ${#ref_names[@]} -eq 0 ]]; then
+    echo -e "\033[31mError: no sequence with prefix '$genome_prefix' found in MAF.\033[0m" >&2
+    exit 1
+  fi
 fi
 
-final_vcfs=
+echo "Reference sequences to process:" >&2
+printf "  %s\n" "${ref_names[@]}" >&2
 
-for name in "${matched_sequences[@]}"; do
-  final_vcfs="$final_vcfs $output_value-/$name.vcf"
+# ---------- 准备临时目录 ----------
+base_dir="${output_file}-"
+mkdir -p "$base_dir"
+maf_temp_dir="${base_dir}mafs"
+
+rm -rf "$maf_temp_dir"
+mkdir -p "$maf_temp_dir"
+
+final_output="${output_file}${gz_suffix}"
+if [[ "$force_overwrite" == "0" && -e "$final_output" ]]; then
+  echo -e "\033[31mError: file $final_output exists; use --force-overwrite or -f to demand an overwrite\033[0m" >&2
+  exit 1
+fi
+
+# ---------- 拆分 MAF ----------
+echo "Splitting MAF by reference chromosomes..." >&2
+
+ref_list_file="${maf_temp_dir}/_ref_list.txt"
+printf "%s\n" "${ref_names[@]}" > "$ref_list_file"
+
+LC_ALL=C awk -v ref_list_file="$ref_list_file" -v outdir="$maf_temp_dir" '
+BEGIN {
+    while ((getline name < ref_list_file) > 0) {
+        if (name == "") continue
+        is_ref[name] = 1
+        out[name] = outdir "/" name ".maf"
+        printf "" > out[name]
+    }
+    close(ref_list_file)
+    n = 0
+    target = ""
+    total_blocks = 0
+}
+
+/^a/ {
+    if (n) flush_block()
+    lines[1] = $0
+    n = 2
+    target = ""
+    total_blocks++
+    next
+}
+
+{
+    lines[n++] = $0
+}
+
+target == "" && /^s / {
+    if ($2 in is_ref) target = $2
+}
+
+END {
+    flush_block()
+    print "Total MAF blocks: " total_blocks > "/dev/stderr"
+    for (r in out) {
+        print "  " r " : " block_count[r] " blocks" > "/dev/stderr"
+        close(out[r])
+    }
+}
+
+function flush_block(   i, f) {
+    if (target != "") {
+        f = out[target]
+        for (i = 1; i < n; ++i)
+            print lines[i] >> f
+        block_count[target]++
+    }
+    n = 0
+    target = ""
+}
+' "$input_file"
+
+rm -f "$ref_list_file"
+
+# ---------- 逐个处理参考染色体 ----------
+vcf_files=()
+for ref in "${ref_names[@]}"; do
+    sub_maf="${maf_temp_dir}/${ref}.maf"
+    if [[ ! -f "$sub_maf" ]]; then
+        echo -e "\033[33mWarning: no blocks found for $ref, skipping.\033[0m" >&2
+        continue
+    fi
+
+    vcf_out="${base_dir}/${ref}.vcf"
+    vcf_files+=("$vcf_out")
+    msavc_fasta -i "$sub_maf" -o "$vcf_out" -r "$ref" "${other_args[@]}"
 done
 
-vcf_merge $final_vcfs > $output_value
-
-if [[ "$gz_mode" == "1" ]]; then
-  gzip -N $output_value $force_overwrite
+if [[ ${#vcf_files[@]} -eq 0 ]]; then
+    echo -e "\033[31mError: no VCF files generated.\033[0m" >&2
+    exit 1
 fi
 
-echo "file: $final_file output: $output_value$gz_suffix"
+# ---------- 合并 VCF ----------
+if [[ ${#vcf_files[@]} -eq 1 ]]; then
+    mv "${vcf_files[0]}" "$output_file"
+else
+    vcf_merge "${vcf_files[@]}" > "$output_file"
+fi
 
-rm -rf $output_value-
+# ---------- 压缩（可选） ----------
+if [[ "$gz_mode" == "1" ]]; then
+  if [[ "$force_overwrite" == "1" ]]; then
+    gzip -N -f "$output_file"
+  else
+    gzip -N "$output_file"
+  fi
+  rm -f "$output_file"
+fi
+
+# ---------- 收集 sub-block 文件（仅当用户传了 -s） ----------
+if [[ "$has_s" == "1" ]]; then
+    shopt -s nullglob
+    subblocks=("$base_dir"/*_subblock*.fasta)
+    shopt -u nullglob
+
+    if [[ ${#subblocks[@]} -gt 0 ]]; then
+        stem="${output_file%.vcf}"
+        idx=0
+        for f in "${subblocks[@]}"; do
+            mv "$f" "${stem}_subblock${idx}.fasta"
+            ((idx++)) || true
+        done
+    else
+        echo -e "\033[33mWarning: -s was given but no sub-block file was produced. Check -b/-e and reference interval.\033[0m" >&2
+    fi
+fi
+
+# ---------- 清理中间 VCF ----------
+rm -rf "$base_dir"

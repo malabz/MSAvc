@@ -40,20 +40,20 @@ echo "Output file: $output_value"
 echo "Other args: ${other_args[@]}"
 
 if [[ "$input_value" == "" ]]; then
-  echo "Error: no input file! Please check your arguments and run again."
+  echo -e "\033[31mError: no input file! Please check your arguments and run again.\033[0m" >&2
   exit 1
 fi
 
 if [[ "$output_value" == "" ]]; then
-  echo "Error: no output file! Please check your arguments and run again."
+  echo -e "\033[31mError: no output file! Please check your arguments and run again.\033[0m" >&2
   exit 1
 fi
 
-first_lines=$(head -n 1 $input_value)
+first_lines=$(head -n 1 "$input_value")
 if echo "$first_lines" | grep -q "^>"; then
   echo "$input_value is fasta file, processing directly"
   msavc_fasta "${other_args[@]}"
 else
   echo "$input_value is maf file, processing by msavc_genome"
-  msavc_genome -i $input_value -o $output_value "${other_args[@]}"
+  msavc_genome "${other_args[@]}"
 fi

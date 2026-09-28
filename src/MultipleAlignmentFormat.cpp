@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <numeric>
 #include <array>
+#include <cstdint>
 
 #include "MultipleAlignmentFormat.hpp"
 #include "Arguments.hpp"
@@ -9,7 +10,7 @@
 static std::array<std::vector<unsigned>, 2> split(std::string const &str)
 {
     std::array<std::vector<unsigned>, 2> avi;
-    unsigned i = std::find_if(str.cbegin(), str.cend(), 
+    unsigned i = std::find_if(str.cbegin(), str.cend(),
             [](unsigned char c) -> bool { return isspace(c) == 0; }) - str.cbegin();
     avi[0].push_back(i);
 
@@ -26,16 +27,16 @@ static std::array<std::vector<unsigned>, 2> split(std::string const &str)
     return avi;
 }
 
-static unsigned string_to_unsigned(std::string const &num) noexcept
+static std::uint64_t string_to_uint64(std::string const &num) noexcept
 {
-    unsigned u;
+    std::uint64_t u;
     try
     {
-        u = std::stoul(num);
+        u = std::stoull(num);
     }
     catch (const std::exception &e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << "\033[31m" << e.what() << "\033[0m\n";
         exit(1);
     }
 
@@ -77,7 +78,8 @@ void utils::MultipleAlignmentFormat::read(std::istream &is, std::string &ref)
 
             // length of the sequence the segment belongs to
             token = n - 2;
-            unsigned const length_of_parent_sequence = string_to_unsigned(line.substr(begins[token], ends[token] - begins[token]));
+            std::uint64_t const length_of_parent_sequence =
+                string_to_uint64(line.substr(begins[token], ends[token] - begins[token]));
 
             // '-' / '+'
             token = n - 3;
@@ -88,19 +90,20 @@ void utils::MultipleAlignmentFormat::read(std::istream &is, std::string &ref)
 
             // count of residues in this segment
             token = n - 4;
-            unsigned const number_provided = string_to_unsigned(line.substr(begins[token], ends[token] - begins[token]));
-            unsigned const count_of_residues = record.sequences.back().size() -
+            std::uint64_t const number_provided =
+                string_to_uint64(line.substr(begins[token], ends[token] - begins[token]));
+            std::uint64_t const count_of_residues = record.sequences.back().size() -
                     std::count(record.sequences.back().cbegin(), record.sequences.back().cend(), '-');
             if (number_provided != count_of_residues)
                 format_error();
 
             // a 0-based index, which indexes the segment position in its parent sequence
-            // if forward_flag == '-', the number indexes the segment position in the reversed sequence of its parent sequence
             token = n - 5;
-            unsigned const position = string_to_unsigned(line.substr(begins[token], ends[token] - begins[token]));
+            std::uint64_t const position =
+                string_to_uint64(line.substr(begins[token], ends[token] - begins[token]));
             record.begins.push_back(position);
 
-            // name of the sequence, which might be seperated by spaces
+            // name of the sequence
             token = n - 6;
             std::string name = line.substr(begins[1], ends[token] - begins[1]);
 
@@ -168,18 +171,20 @@ unsigned utils::Record::where_is(unsigned index) const
 void utils::Record::build_map_if_necessary(unsigned reference_index)
 {
     unsigned const reference_index_in_this_record = where_is(reference_index);
-    if (reference_index_in_this_record == sequences.size()) // one record might not contain the reference sequence
+    if (reference_index_in_this_record == sequences.size())
         return;
 
-    // map.empty() == true <=> the record does not contain reference
-
     std::string const &reference = sequences[reference_index_in_this_record];
-    unsigned const col = reference.size();
+    std::size_t const col = reference.size();
 
-    auto &map_to = map_to_source_site; map_to.reserve(col + 1);
-    auto &map_from = map_from_source_site; map_from.reserve(col + 1);
+    auto &map_to = map_to_source_site;
+    auto &map_from = map_from_source_site;
+    if (!map_to.empty()) return;   // 已经建过
 
-    for (unsigned i = 0; i != col; ++i)
+    map_to.reserve(col + 1);
+    map_from.reserve(col + 1);
+
+    for (std::size_t i = 0; i != col; ++i)
         if (reference[i] != '-') {
             map_to.push_back(map_from.size());
             map_from.push_back(i);
@@ -191,7 +196,8 @@ void utils::Record::build_map_if_necessary(unsigned reference_index)
     map_from.push_back(col);
 }
 
-void utils::Record::reverse(std::vector<unsigned> const &lengths_of_parent_sequences, std::array<char, 128> const &map_to_complemented) noexcept
+void utils::Record::reverse(std::vector<std::uint64_t> const &lengths_of_parent_sequences,
+                            std::array<char, 128> const &map_to_complemented) noexcept
 {
     for (auto &sequence : sequences)
     {
@@ -199,10 +205,12 @@ void utils::Record::reverse(std::vector<unsigned> const &lengths_of_parent_seque
         for (char &site : sequence) site = map_to_complemented[site];
     }
 
-    unsigned const n = sequences.size();
-    for (unsigned i = 0; i != n; ++i)
-        begins[i] = lengths_of_parent_sequences[belongs[i]] - begins[i]
-                - sequences[i].size() + std::count(sequences[i].cbegin(), sequences[i].cend(), '-');
+    std::size_t const n = sequences.size();
+    for (std::size_t i = 0; i != n; ++i)
+        begins[i] = lengths_of_parent_sequences[belongs[i]]
+                  - begins[i]
+                  - static_cast<std::uint64_t>(sequences[i].size())
+                  + static_cast<std::uint64_t>(std::count(sequences[i].cbegin(), sequences[i].cend(), '-'));
 
     forward.flip();
 }
@@ -231,10 +239,6 @@ std::array<char, 128> utils::MultipleAlignmentFormat::construct_map_to_complemen
 
     map['t'] = 'a';
     map['T'] = 'A';
-
-    // rna sequences could only be in fasta format, which does not require any reversing or complementing
-    // map['u'] = 'a';
-    // map['U'] = 'A';
 
     map['g'] = 'c';
     map['G'] = 'C';

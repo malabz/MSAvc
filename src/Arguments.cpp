@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20260415";
+static char constexpr version[]                                     = "v0.1.20260925";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -37,13 +37,13 @@ unsigned arguments::reference_index;
 bool arguments::genotype_matrix;
 bool arguments::combine_like_substitutions;
 
-unsigned arguments::lpos;
-unsigned arguments::rpos;
+std::uint64_t arguments::lpos;
+std::uint64_t arguments::rpos;
 
-unsigned arguments::minimum_alternative_allele_count_acceptable;
-unsigned arguments::maximum_alternative_allele_count_acceptable;
-unsigned arguments::minimum_variation_length_acceptable;
-unsigned arguments::maximum_variation_length_acceptable;
+std::uint64_t arguments::minimum_alternative_allele_count_acceptable;
+std::uint64_t arguments::maximum_alternative_allele_count_acceptable;
+std::uint64_t arguments::minimum_variation_length_acceptable;
+std::uint64_t arguments::maximum_variation_length_acceptable;
 bool arguments::variation_type_acceptable[4];
 
 bool arguments::force;
@@ -72,7 +72,7 @@ void arguments::deduce_subblock_file_path()
 {
     std::filesystem::path const path(outfile_path);
     if (path.has_stem() == false) {
-        std::cerr << "output file path illegal: " << outfile_path << '\n';
+        std::cerr << "\033[31moutput file path illegal: " << outfile_path << "\033[0m\n";
         exit(1);
     }
 
@@ -94,24 +94,24 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
 
     auto const reference_option = boost::program_options::value<std::string>(&reference_name);
 
-    auto const position_filter_begin_option = boost::program_options::value<unsigned>(&lpos);
-    auto const position_filter_end_option = boost::program_options::value<unsigned>(&rpos);
-    position_filter_begin_option->default_value(1); // 1-based
-    position_filter_end_option->default_value(std::numeric_limits<unsigned>::max() - 1); // -1 in case of overflow
+    auto const position_filter_begin_option = boost::program_options::value<std::uint64_t>(&lpos);
+    auto const position_filter_end_option   = boost::program_options::value<std::uint64_t>(&rpos);
+    position_filter_begin_option->default_value(1);
+    position_filter_end_option->default_value(std::numeric_limits<std::uint64_t>::max());
 
-    auto const minimum_alternative_allele_count_filter_option = boost::program_options::value<unsigned>(&minimum_alternative_allele_count_acceptable);
+    auto const minimum_alternative_allele_count_filter_option = boost::program_options::value<std::uint64_t>(&minimum_alternative_allele_count_acceptable);
     minimum_alternative_allele_count_filter_option->default_value(1);
 
-    auto const maximum_alternative_allele_count_filter_option = boost::program_options::value<unsigned>(&maximum_alternative_allele_count_acceptable);
-    maximum_alternative_allele_count_filter_option->default_value(std::numeric_limits<unsigned>::max() - 1);
+    auto const maximum_alternative_allele_count_filter_option = boost::program_options::value<std::uint64_t>(&maximum_alternative_allele_count_acceptable);
+    maximum_alternative_allele_count_filter_option->default_value(std::numeric_limits<std::uint64_t>::max());
 
-    auto const variation_type_filter_option = boost::program_options::value<std::vector<std::string>>();
+    auto const variation_type_filter_option = boost::program_options::value<std::vector<std::string>>();   // <-- 就是这一行被漏了
 
-    auto const minimum_variation_length_filter_option = boost::program_options::value<unsigned>(&minimum_variation_length_acceptable);
+    auto const minimum_variation_length_filter_option = boost::program_options::value<std::uint64_t>(&minimum_variation_length_acceptable);
     minimum_variation_length_filter_option->default_value(1);
 
-    auto const maximum_variation_length_filter_option = boost::program_options::value<unsigned>(&maximum_variation_length_acceptable);
-    maximum_variation_length_filter_option->default_value(std::numeric_limits<unsigned>::max() - 1);
+    auto const maximum_variation_length_filter_option = boost::program_options::value<std::uint64_t>(&maximum_variation_length_acceptable);
+    maximum_variation_length_filter_option->default_value(std::numeric_limits<std::uint64_t>::max());
 
     auto const buffer_size_option = boost::program_options::value<unsigned>(&buffer_size);
     buffer_size_option->default_value(1 << 20);
@@ -203,7 +203,9 @@ void arguments::parse_arguments(unsigned argc, const char *const *argv)
     }
 
     // closed to open
-    ++rpos; // TODO: determine this value
+    // 注意：哨兵值 max() 不 ++，等 check_arguments 根据参考长度替换
+    if (rpos != std::numeric_limits<std::uint64_t>::max())
+        ++rpos;
 }
 
 void arguments::check_arguments(utils::Fasta const &infile)
@@ -211,19 +213,19 @@ void arguments::check_arguments(utils::Fasta const &infile)
     unsigned const row = infile.sequences.size();
 
     if (row == 0) {
-        std::cerr << "fasta format error\n";
+        std::cerr << "\033[31mfasta format error\033[0m\n";
         exit(1);
     }
 
     if (row == 1) {
-        std::cerr << "only one sequence found\n";
+        std::cerr << "\033[31monly one sequence found\033[0m\n";
         exit(1);
     }
 
     unsigned const col = infile.sequences[0].size();
     for (unsigned i = 1; i != row; ++i)
         if (infile.sequences[i].size() != col) {
-            std::cerr << "sequences not with the same length\n";
+            std::cerr << "\033[31msequences not with the same length\033[0m\n";
             exit(1);
         }
 
@@ -247,10 +249,24 @@ void arguments::check_arguments(utils::Fasta const &infile)
         reference_name = infile.names[0];
     }
 
-    if (rpos > col)
-        rpos = col;
+    // 参考序列的真实长度 = 比对长度 - gap 数
+    std::uint64_t const ref_len = std::count_if(
+        infile.sequences[reference_index].begin(),
+        infile.sequences[reference_index].end(),
+        [](char c) { return c != '-'; });
 
-    if (lpos >= col)
+    if (rpos == std::numeric_limits<std::uint64_t>::max())
+        rpos = ref_len + 1;
+    if (rpos > ref_len + 1)
+        rpos = ref_len + 1;
+
+    if (maximum_alternative_allele_count_acceptable == std::numeric_limits<std::uint64_t>::max())
+        maximum_alternative_allele_count_acceptable = row;
+
+    if (maximum_variation_length_acceptable == std::numeric_limits<std::uint64_t>::max())
+        maximum_variation_length_acceptable = ref_len;
+
+    if (lpos >= ref_len)
         argument_error("position index out of bounds");
 
     check_arguments();
@@ -271,7 +287,7 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
         unsigned const col = record.sequences[0].size();
         for (unsigned i = 1; i != row; ++i)
             if (record.sequences[i].size() != col) {
-                std::cerr << "sequences not with the same length\n";
+                std::cerr << "\033[31msequences not with the same length\033[0m\n";
                 exit(1);
             }
     }
@@ -293,6 +309,29 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
     {
         reference_index = 0;
         reference_name = infile.names[0];
+    }
+
+    // reference_genome_prefix 模式下 reference_index 是哨兵，拿不到 lengths
+    if (reference_index != std::numeric_limits<unsigned>::max() - 1)
+    {
+        std::uint64_t const ref_len = infile.lengths[reference_index];   // 只声明这一次
+
+        // maximum AC 的正确上界 = 单块最大序列数，而不是跨 block 去重后的并集
+        std::uint64_t max_block_seq = 0;
+        for (auto const &record : infile.records)
+            if (record.sequences.size() > max_block_seq)
+                max_block_seq = record.sequences.size();
+
+        if (rpos == std::numeric_limits<std::uint64_t>::max())
+            rpos = ref_len + 1;                    // 用户没给 -e：覆盖整条参考
+        if (rpos > ref_len + 1)
+            rpos = ref_len + 1;                    // 用户给了但超了：截断
+
+        if (maximum_alternative_allele_count_acceptable == std::numeric_limits<std::uint64_t>::max())
+            maximum_alternative_allele_count_acceptable = max_block_seq;
+
+        if (maximum_variation_length_acceptable == std::numeric_limits<std::uint64_t>::max())
+            maximum_variation_length_acceptable = ref_len;
     }
 
     check_arguments();
@@ -331,7 +370,7 @@ void arguments::infile_format_unexpected()
 
 void arguments::argument_error(std::string const &message)
 {
-    std::cerr << "argument error: " << message << '\n';
+    std::cerr << "\033[31margument error: " << message << "\033[0m\n";
     exit(1);
 }
 
@@ -366,30 +405,31 @@ void arguments::produce_help_message(const int &mode)
         "\n       Note: -r and -R are mutually exclusive when processing MAF files." : "")
         << (!mode ? "         Reference sequence name" : "")
         << "\n"
-        << (mode ? "\n   -R, --reference-genome <prefix>   Reference genome prefix (MAF only)" : "")
+        << (mode ? "\n   -R, --reference-genome <prefix>   Reference genome prefix (MAF only, e.g.,hg38)" : "")
         << "\n   -g, --genotype-matrix             Output genotype matrix (default: off)"
         "\n"
         "\n   -n, --nomerge-sub"
-        "\n       Do not merge SUB variations at the same position (default: off)"
+        "\n       Disable merging of SUB variants that share the same position and"
+        "\n       length (default: off)"
         "\n"
         "\n   -b, --filter-begin <int>"
         "\n       Filter by min POS value (e.g., -b 24: POS>=24) (default: 1)"
         "\n"
         "\n   -e, --filter-end <int>" 
-        "\n       Filter by max POS value (e.g., -e 1000: POS<=1000) (default: last base)"
+        "\n       Filter by max POS value (e.g., -e 1000: POS<=1000) (default: ref end)"
         "\n"
         "\n   -c, --ac-greater <int>"
-        "\n       Filter by min AC value (e.g., -c 10: AC>=10) (default: 0)"
+        "\n       Filter by min AC value (e.g., -c 10: AC>=10) (default: 1)"
         "\n"
         "\n   -d, --ac-less <int>"
-        "\n       Filter by max AC value (e.g., -d 100: AC<=100) (default: total "
+        "\n       Filter by max AC value (e.g., -d 100: AC<=100) (default: total"
         "\n       sequences)"
         "\n"
         "\n   -t, --filter-vt <variationtype>"
         "\n       Filter by variation type: sub/ins/del/rep (e.g., -t sub) (default: off)"
         "\n"
         "\n   -l, --vl-greater <int> "
-        "\n       Filter by min VLEN (bp) (e.g., -l 5: VLEN>=5) (default: 0)"
+        "\n       Filter by min VLEN (bp) (e.g., -l 5: VLEN>=5) (default: 1)"
         "\n"
         "\n   -m, --vl-less <int> "
         "\n       Filter by max VLEN (bp) (e.g., -m 10: VLEN<=10) (default: ref length)"
@@ -402,7 +442,7 @@ void arguments::produce_help_message(const int &mode)
         "\n       only, default: 1048576)"
         "\n"
         "\n   -N, --no-duplicate-name           Skip duplicate name check (default: off)"
-        "\n   -C, --compress-bgz                Compress VCF output with bgzip"
+        "\n   -C, --compress-bgz                Compress VCF output with bgzip (default: off)"
         "\n   -f, --force-overwrite             Overwrite existing files (default: off)"
         "\n   -h, --help                        Display help information"
         "\n   -v, --version                     Print version"
@@ -442,23 +482,23 @@ void arguments::print_arguments()
         << "\n\t" << yes_or_no(compress_bgz)
         << "\n"
         << "reference name: \n\t" << reference_name
-        << "\ngenotype matrix output: "
+        << "\ngenotype matrix: "
         << "\n\t" << yes_or_no(genotype_matrix)
-        << "\ncombine like substitutions: "
-        << "\n\t" << yes_or_no(combine_like_substitutions)
-        << "\nleft limit: "
+        << "\nmerge SUB variants with identical position and length: "
+        << "\n\t" << yes_or_no(!combine_like_substitutions)
+        << "\nmin POS: "
         << "\n\t" << lpos
-        << "\nright limit: "
+        << "\nmax POS: "
         << "\n\t" << rpos - 1 // closed to open
-        << "\nminimum alternative allele count acceptable: "
+        << "\nmin ALT allele count: "
         << "\n\t" << minimum_alternative_allele_count_acceptable
-        << "\nmaximum alternative allele count acceptable: "
+        << "\nmax ALT allele count: "
         << "\n\t" << maximum_alternative_allele_count_acceptable
-        << "\nminimum variation length acceptable: "
+        << "\nmin variant length: "
         << "\n\t" << minimum_variation_length_acceptable
-        << "\nmaximum variation length acceptable: "
+        << "\nmax variant length: "
         << "\n\t" << maximum_variation_length_acceptable
-        << "\nvariation type acceptable: "
+        << "\nvariant types: "
         << "\n\t"; print_variation_type(std::cerr)
         << "\noverwrite the file if existing file path provided: "
         << "\n\t" << yes_or_no(force)

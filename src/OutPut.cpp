@@ -43,7 +43,7 @@ static void output_alterations(std::ostream &os, mutation_and_occurrences_iterat
     }
 }
 
-static void output_info(std::ostream &os, mutation_and_occurrences_iterator first, mutation_and_occurrences_iterator last, unsigned variation_length)
+static void output_info(std::ostream &os, mutation_and_occurrences_iterator first,mutation_and_occurrences_iterator last, std::uint64_t variation_length)
 {
     os << "\tAC=";
 
@@ -63,7 +63,7 @@ static void output_info(std::ostream &os, mutation_and_occurrences_iterator firs
     os << ";VT=" << mut::abbreviated_mutation_types[first->first.variation_type] << ";VLEN=" << variation_length;
 }
 
-static unsigned calculate_variation_length(mut::Mutation const &mutation)
+static std::uint64_t calculate_variation_length(mut::Mutation const &mutation)
 {
     // unsigned ref_length, alt_length;
 
@@ -97,7 +97,7 @@ static unsigned calculate_variation_length(mut::Mutation const &mutation)
     }
 }
 
-static unsigned get_pos(mut::Mutation const &mutation) noexcept
+static std::uint64_t get_pos(mut::Mutation const &mutation) noexcept
 {
     unsigned const pos = mutation.first;
     if (mutation.reference_segment.front() == '^')
@@ -123,7 +123,7 @@ static bool rep_seg_same(std :: string const &sega, std :: string const &segb, s
 void output_file_head(std::stringstream &ofs, utils::MultipleAlignmentFormat const &infile)
 {
     ofs <<   "##fileformat=VCFv4.1"
-        << "\n##contig=<ID=" << arguments::reference_name << ",length=" << infile.lengths[arguments::reference_index]
+        << "\n##contig=<ID=" << arguments::reference_name << ",length=" << infile.lengths[arguments::reference_index]<< ">"
         << "\n##INFO=<ID=AC,Number=A,Type=Integer,Description=\"Alternate allele count, for each ALT allele, in the same order as listed\">"
            "\n##INFO=<ID=VT,Number=1,Type=String,Description=\"Type of small variant\">"
            "\n##INFO=<ID=VLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">"
@@ -144,14 +144,14 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
         bgzf_stream = bgzf_hopen(bgz_file, "w");
         if (bgzf_stream == NULL || bgz_file == NULL)
         {
-            std::cerr << "Can not open gz file: " << arguments::outfile_path << ".gz" << std::endl;
+            std::cerr << "\033[31mCan not open gz file: " << arguments::outfile_path << ".gz\033[0m" << std::endl;
             exit(1);
         }
     }
     else
     {
         realfile = std::ofstream(arguments::outfile_path);
-        if (! realfile) { std::cerr << "cannot open " << arguments::outfile_path << '\n'; exit(1); }
+        if (! realfile) {std::cerr << "\033[31mcannot open " << arguments::outfile_path << "\033[0m\n";exit(1);}
     }
 
     auto const &names = maf.names;
@@ -173,6 +173,22 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
         }
     }
     ofs << '\n';
+
+    // ---- 新增：头部立即刷盘，保证空结果时文件也非空 ----
+    if (arguments::compress_bgz)
+    {
+        if(bgzf_write(bgzf_stream, ofs.str().c_str(), ofs.str().length()) < 0)
+        {
+            std::cerr << "\033[31mError on writing to gz file. Program will exit.\033[0m" << std::endl;
+            exit(1);
+        }
+    }
+    else
+    {
+        realfile << ofs.rdbuf();
+    }
+    ofs.str("");
+    // ---- 新增结束 ----
 
     // used only for arguments::matrix
     std::vector<unsigned> alteration_numbers;
@@ -198,12 +214,14 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
         if (mutation_delegate.first >= arguments::rpos)
             continue;
 
-        unsigned const variation_length = calculate_variation_length(mutation_delegate);
+        // ---- 改：VLEN 升到 64 位 ----
+        std::uint64_t const variation_length = calculate_variation_length(mutation_delegate);
         if (variation_length < arguments::minimum_variation_length_acceptable)
             continue;
 
         if (variation_length > arguments::maximum_variation_length_acceptable)
             continue;
+        // ---- 改结束 ----
 
         if (std::count_if(i, j, acceptable) == 0)
             continue;
@@ -247,23 +265,15 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
 
             unsigned const reference_index_in_this_record = record.where_is(arguments::reference_index);
             std::string const &reference = record.sequences[reference_index_in_this_record];
-            unsigned const reference_offset = record.begins[reference_index_in_this_record];
+            std::uint64_t const reference_offset = record.begins[reference_index_in_this_record];
 
-            unsigned l, r;
+            std::uint64_t l, r;
             if (mutation_delegate.first == reference_offset)
             {
                 l = record.map_from_source_site[1];
-                // for (auto const [_, which_sequence] : i->second)
-                // {
-                //     unsigned candidate = 1;
-                //     for (; reference[candidate] == record.sequences[which_sequence][candidate]; ++candidate) ;
-                //     if (l > candidate) l = candidate;
-                // }
 
                 if (mutation_delegate.last == record.map_to_source_site.back() + reference_offset)
                     r = record.map_from_source_site[mutation_delegate.last - reference_offset];
-                    // equals to:
-                    // r = reference.size();
                 else
                     r = record.map_from_source_site[mutation_delegate.last - reference_offset + 1];
             }
@@ -271,13 +281,6 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
             {
                 l = record.map_from_source_site[mutation_delegate.first - reference_offset];
                 r = record.map_from_source_site[mutation_delegate.last - reference_offset - 1] + 1;
-
-                // for (auto const [_, which_sequence] : i->second)
-                // {
-                //     unsigned candidate = record.map_from_source_site[mutation_delegate.last - reference_offset];
-                //     for (; reference[candidate - 1] == record.sequences[which_sequence][candidate - 1]; --candidate) ;
-                //     if (r > candidate) r = candidate;
-                // }
             }
 
             for (unsigned index_based_on_record = 0; index_based_on_record != record.sequences.size(); ++index_based_on_record)
@@ -308,7 +311,7 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
         {
             if(bgzf_write(bgzf_stream, ofs.str().c_str(), ofs.str().length()) < 0)
             {
-                std::cerr << "Error on writing to gz file. Program will exit." << std::endl;
+                std::cerr << "\033[31mError on writing to gz file. Program will exit.\033[0m" << std::endl;
                 exit(1);
             }
         }
@@ -322,7 +325,7 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
     {
         if(bgzf_close(bgzf_stream))
         {
-            std::cerr << "Error on closing gz file " << arguments::outfile_path << ".gz. Program will exit." << std::endl;
+            std::cerr << "\033[31mError on closing gz file " << arguments::outfile_path << ".gz. Program will exit.\033[0m" << std::endl;
             exit(1);
         }
     }
@@ -330,14 +333,13 @@ void output(utils::MultipleAlignmentFormat const &maf, mut::MutationContainer co
 }
 
 // 0-based [begin, end)
-void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned begin, unsigned end)
+void output_sub_block(utils::MultipleAlignmentFormat const &infile,
+                      std::uint64_t begin, std::uint64_t end)
 {
-    // assert begin < end
     --begin;
     --end;
 
     int found_blocks = 0;
-    // std::cerr << "Begin = " << begin << "; End = " << end << std::endl;
 
     for (auto const &record : infile.records)
     {
@@ -346,25 +348,18 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
             continue;
 
         std::string const &reference = record.sequences[reference_index_of_record];
-        unsigned const reference_offset = record.begins[reference_index_of_record];
+        std::uint64_t const reference_offset = record.begins[reference_index_of_record];
 
-        unsigned const overlap_begin = std::max(begin, reference_offset), overlap_end = std::min(end, reference_offset + record.map_from_source_site.back());
-
-#if DEBUG
-        std::cerr << "Reference interval = [" << reference_offset << ", " << reference_offset + record.map_from_source_site.back() << "), "
-                  << "overlap interval = [" << overlap_begin << ", " << overlap_end << ")\n";
-#endif
+        std::uint64_t const overlap_begin = std::max(begin, reference_offset);
+        std::uint64_t const overlap_end   = std::min(end, reference_offset + record.map_from_source_site.back());
 
         if (overlap_begin > overlap_end)
             continue;
 
-        unsigned const l = record.map_from_source_site[overlap_begin - reference_offset] + 1;
-        unsigned r = record.map_from_source_site[overlap_end - reference_offset] + 1;
-        if (end != overlap_end) r = record.map_from_source_site.back(); // directly print the whole block
+        std::uint64_t const l = record.map_from_source_site[overlap_begin - reference_offset] + 1;
+        std::uint64_t r = record.map_from_source_site[overlap_end - reference_offset] + 1;
+        if (end != overlap_end) r = record.map_from_source_site.back();
 
-#if DEBUG
-        std::cerr << "Valid, will print " << l << " to " << r << " ? " << record.map_from_source_site[overlap_end - reference_offset] + 1 << std::endl;
-#endif
         utils::Fasta fasta;
         fasta.names.reserve(record.sequences.size());
         for (auto const &name_id : record.belongs)
@@ -373,24 +368,16 @@ void output_sub_block(utils::MultipleAlignmentFormat const &infile, unsigned beg
         for (auto const &sequence : record.sequences)
             fasta.sequences.push_back(sequence.substr(l, r - l));
 
-#if DEBUG
-        for (auto const &Name : fasta.names)
-            std::cerr << Name << std::endl;
-        for (auto const &seq : record.belongs)
-            std::cerr << seq << ' ' << infile.names[seq] << std::endl;
-#endif
-
         std::string this_block_path = arguments::sub_block_outfile_path;
         this_block_path = this_block_path.replace(this_block_path.find('*'), 1, std::to_string(found_blocks));
-        // std::cerr << this_block_path << std::endl;
         std::ofstream ofs(this_block_path);
-        if (!ofs) { std::cerr << "cannot open " << arguments::outfile_path << '\n'; return; }
+        if (!ofs) {std::cerr << "\033[31mcannot open " << arguments::outfile_path << "\033[0m\n";return;}
         fasta.write_to(ofs);
-        
+
         ++ found_blocks;
     }
 
-    if (! found_blocks) std::cerr << "Error: found no sub block in MAF file, please check the sub block arugments and run again.\n";
+    if (! found_blocks) std::cerr << "\033[31mError: found no sub block in MAF file, please check the sub block arguments and run again.\033[0m\n";
 }
 
 /**

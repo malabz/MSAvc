@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <map>
 
 #include "Fasta.hpp"
@@ -23,8 +24,8 @@ namespace mut
         unsigned variation_type;
 
         // zero-based indexes of the source of the reference sequence
-        unsigned first, last;
-        unsigned seq_id;
+        std::uint64_t first, last;   // <-- 改：源坐标，可能 > 2^32
+        unsigned seq_id;             // <-- 保持：序列索引
 
         std::string counterpart_segment;
 
@@ -52,13 +53,16 @@ namespace mut
 
     using MutationContainer = std::map<Mutation, std::vector<WhereAbout>>;
 
-    // std::ostream &operator<<(std::ostream &os, Mutation const &m);
-
-    void extract_mutation(MutationContainer &mutations, std::vector<std::string> const &sequences, unsigned reference_index, unsigned counterpart_index, unsigned &position);
+    void extract_mutation(MutationContainer &mutations,
+                          std::vector<std::string> const &sequences,
+                          unsigned reference_index, unsigned counterpart_index,
+                          std::uint64_t &position);   // <-- 改：position 用 64 位
     MutationContainer search_in(utils::MultipleAlignmentFormat const &infile, unsigned reference_index);
     MutationContainer search_in(std::vector<std::string> const &sequences, unsigned reference_index);
     MutationContainer search_in(utils::MultipleAlignmentFormat &infile, const std::string &reference_prefix);
-    MutationContainer search_in(std::vector<std::string> const &sequences, std::vector<std::string> const &names, const std::string &reference_prefix);
+    MutationContainer search_in(std::vector<std::string> const &sequences,
+                                std::vector<std::string> const &names,
+                                const std::string &reference_prefix);
 
     template<typename lhs_iter, typename rhs_iter>
     unsigned deduce_variation_type(lhs_iter lhs_first, lhs_iter lhs_last, rhs_iter rhs_first) noexcept;
