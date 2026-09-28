@@ -1,0 +1,47 @@
+{% set name = "msavc" %}
+{% set version = "0.1.20260925" %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/malabz/MSAvc/archive/refs/tags/v{{ version }}.tar.gz
+  sha256: PLACEHOLDER
+
+build:
+  number: 0
+  script: "{{ PREFIX }}/bin/bash -e {{ SRC_DIR }}/recipe/build.sh"
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - make
+  host:
+    - boost-cpp
+    - htslib
+    - zlib
+    - libdeflate
+    - bzip2
+    - xz
+    - libcurl
+  run:
+    - boost-cpp
+    - htslib
+    - zlib
+    - libdeflate
+    - bzip2
+    - xz
+    - libcurl
+    - bash
+
+test:
+  commands:
+    - msavc --version
+    - msavc_fasta --version
+    - msavc_genome --version
+
+about:
+  home: https://github.com/malabz/MSAvc
+  license: MIT
+  summary: 'MSAvc: variation calling for genome-scale multiple sequence alignments'
