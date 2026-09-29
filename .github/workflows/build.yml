@@ -41,23 +41,15 @@ jobs:
           conda install -y -n base -c conda-forge conda-build anaconda-client
 
       - name: Build package
-        id: build
         run: |
-          conda build recipe/
-          PKG_PATH=$(conda build recipe/ --output | tail -n 1)
-          echo "pkg_path=$PKG_PATH" >> "$GITHUB_OUTPUT"
-          echo "Built package: $PKG_PATH"
+          conda run -n base conda build recipe/
 
       - name: Upload to malab channel
         env:
           ANACONDA_API_TOKEN: ${{ secrets.MSAVC_CI }}
         run: |
-          if [ -z "$ANACONDA_API_TOKEN" ]; then
-            echo "ERROR: MSAVC_CI secret is empty!"
-            exit 1
-          fi
-          anaconda --token "$ANACONDA_API_TOKEN" upload \
-              --user malab \
+          conda run -n base anaconda --token "$ANACONDA_API_TOKEN" upload \
+              --channel malab \
               --label main \
               --force \
-              "${{ steps.build.outputs.pkg_path }}"
+              $(conda run -n base conda build recipe/ --output)
