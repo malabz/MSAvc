@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             platform: linux-64
           - os: macos-13
             platform: osx-64
@@ -26,29 +26,38 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: 'latest'
-          channels: conda-forge,bioconda
+          channels: conda-forge,bioconda,nodefaults
           channel-priority: strict
-          auto-activate-base: true
+          auto-activate: true
 
       - name: Install conda-build and anaconda-client
         run: |
           conda install -y -n base -c conda-forge conda-build anaconda-client
 
       - name: Build package
+        id: build
         run: |
-          conda run -n base conda build recipe/
+          conda build recipe/
+          PKG_PATH=$(conda build recipe/ --output | tail -n 1)
+          echo "pkg_path=$PKG_PATH" >> "$GITHUB_OUTPUT"
+          echo "Built package: $PKG_PATH"
 
       - name: Upload to malab channel
         env:
           ANACONDA_API_TOKEN: ${{ secrets.MSAVC_CI }}
         run: |
-          conda run -n base anaconda --token "$ANACONDA_API_TOKEN" upload \
-              --channel malab \
+          if [ -z "$ANACONDA_API_TOKEN" ]; then
+            echo "ERROR: MSAVC_CI secret is empty!"
+            exit 1
+          fi
+          anaconda --token "$ANACONDA_API_TOKEN" upload \
+              --user malab \
+              --label main \
               --force \
-              $(conda run -n base conda build recipe/ --output)
+              "${{ steps.build.outputs.pkg_path }}"
