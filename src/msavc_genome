@@ -123,7 +123,7 @@ fi
 
 # ---------- 推断基因组前缀 ----------
 if [[ "$has_R" == "0" && "$has_r" == "0" ]]; then
-  first_seq=$(grep -m1 "^s " "$input_file" | awk '{print $2}')
+  first_seq=$(grep -m1 '^s[[:space:]]' "$input_file" | awk '{print $2}')
   if [[ -z "$first_seq" ]]; then
     echo -e "\033[31mError: cannot find any sequence line in MAF.\033[0m" >&2
     exit 1
@@ -136,11 +136,11 @@ fi
 if [[ "$has_r" == "1" ]]; then
   ref_names=("$ref_single")
 else
-  ref_names=()
+    ref_names=()
   while IFS= read -r line; do
     [[ -n "$line" ]] && ref_names+=("$line")
   done < <(
-    LC_ALL=C grep -oE '^s[ \t]+[^ \t]+' "$input_file" \
+    LC_ALL=C grep -oE '^s[[:space:]]+[^[:space:]]+' "$input_file" \
     | LC_ALL=C awk -v prefix="$genome_prefix" \
         'index($2, prefix ".") == 1 { print $2 }' \
     | LC_ALL=C sort -u
