@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload to malab channel
         env:
-          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          ANACONDA_API_TOKEN: ${{ secrets.MSAVC_CI }}
         run: |
           conda run -n base anaconda --token "$ANACONDA_API_TOKEN" upload \
               --channel malab \
