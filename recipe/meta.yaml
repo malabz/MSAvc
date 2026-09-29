@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/malabz/MSAvc/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: PLACEHOLDER
+  sha256: e8994b1da14a4d1f670013a14fc6c981686b6a0417a4dd2516b9f4a03c9f5ff1
 
 build:
   number: 0
