@@ -284,3 +284,5 @@ fi
 
 # ---------- 清理中间 VCF ----------
 rm -rf "$base_dir"
+
+echo "Final output: ${final_output}" >&2

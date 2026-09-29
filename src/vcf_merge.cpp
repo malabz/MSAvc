@@ -310,7 +310,6 @@ int main(int argc, char** argv) {
     for (const auto& info : files) if (info.has_samples) { any_samples = true; break; }
 
     if (!any_samples) {
-        fprintf(stderr, "Fast path (no samples, use sendfile)\n");
         merge_fast(files, {});
     } else {
         bool same_order = true;
@@ -319,10 +318,8 @@ int main(int argc, char** argv) {
             if (files[i].sample_names != first) { same_order = false; break; }
         }
         if (same_order) {
-            fprintf(stderr, "Fast path (samples order same, use sendfile)\n");
             merge_fast(files, first);
         } else {
-            fprintf(stderr, "Slow path (reordering samples, mmap-based optimized)\n");
             merge_reorder(files);
         }
     }
