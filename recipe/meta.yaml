@@ -12,7 +12,7 @@ package:
 
 source:
   url: https://github.com/malabz/MSAvc/archive/refs/tags/v{{ git_tag }}.tar.gz
-  sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  sha256: 8ab17683a3563d3264656168f586c4b215d2c0138300c460163baa0ca2b06a3c
 
 build:
   number: 2
