@@ -57,7 +57,8 @@ jobs:
           fi
           PKG_PATH=$(conda build recipe/ --output | tail -n 1)
           echo "Uploading: $PKG_PATH"
-          anaconda --token "$ANACONDA_API_TOKEN" upload \
+          conda run -n base --no-capture-output anaconda \
+              --token "$ANACONDA_API_TOKEN" upload \
               --channel malab \
               --label main \
               --force \
