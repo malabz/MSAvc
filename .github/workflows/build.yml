@@ -39,7 +39,6 @@ jobs:
       - name: Install conda-build and anaconda-client
         run: |
           conda install -y -n base -c conda-forge conda-build anaconda-client
-          conda list conda-build
 
       - name: Build package
         run: |
