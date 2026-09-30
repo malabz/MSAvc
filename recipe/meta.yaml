@@ -1,6 +1,6 @@
 {% set name = "msavc" %}
 {% set version = "0.1.20260925" %}
-{% set git_tag = "0.1.20260925.1" %}       # ← 新增变量
+{% set git_tag = "0.1.20260925.2" %}       # ← 新增变量
 
 package:
   name: {{ name }}
@@ -12,10 +12,10 @@ package:
 
 source:
   url: https://github.com/malabz/MSAvc/archive/refs/tags/v{{ git_tag }}.tar.gz
-  sha256: 42f237d4200e83bd017bc5712dbe3625e6cf017bd43bb53debb16f8fe8056d14
+  sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
 build:
-  number: 1
+  number: 2
 
 requirements:
   build:
