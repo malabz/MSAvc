@@ -10,8 +10,8 @@ package:
   version: {{ version }}
 
 source:
-  url: https://github.com/malabz/MSAvc/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: PLACEHOLDER                    
+  git_url: https://github.com/malabz/MSAvc.git
+  git_rev: v{{ version }}
 
 build:
   number: 0                             
