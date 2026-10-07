@@ -56,7 +56,7 @@ namespace mut
     void extract_mutation(MutationContainer &mutations,
                           std::vector<std::string> const &sequences,
                           unsigned reference_index, unsigned counterpart_index,
-                          std::uint64_t &position);   // <-- 改：position 用 64 位
+                          std::uint64_t &position);   
     MutationContainer search_in(utils::MultipleAlignmentFormat const &infile, unsigned reference_index);
     MutationContainer search_in(std::vector<std::string> const &sequences, unsigned reference_index);
     MutationContainer search_in(utils::MultipleAlignmentFormat &infile, const std::string &reference_prefix);
@@ -69,6 +69,6 @@ namespace mut
     unsigned deduce_variation_type(char lhs, char rhs) noexcept;
 
     char constexpr abbreviated_mutation_types[4][4] = { "SUB", "DEL", "INS", "REP" };
-    std::string const mutation_types[4] = { "substitution", "deletion", "insertion", "replace" };
+    std::string const mutation_types[4] = { "substitution", "deletion", "insertion", "replacement" };
 
 }

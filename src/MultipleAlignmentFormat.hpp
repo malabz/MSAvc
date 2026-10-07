@@ -16,13 +16,13 @@ namespace utils
     {
         std::vector<std::string> sequences;
         std::vector<bool> forward;
-        std::vector<std::uint64_t> begins;          // <-- 改：源坐标
+        std::vector<std::uint64_t> begins;          
 
-        std::vector<unsigned> belongs;              // <-- 保持：序列索引
+        std::vector<unsigned> belongs;              
         unsigned where_is(unsigned index) const;
 
-        std::vector<std::uint64_t> map_to_source_site;    // <-- 改
-        std::vector<std::uint64_t> map_from_source_site;  // <-- 改
+        std::vector<std::uint64_t> map_to_source_site;    
+        std::vector<std::uint64_t> map_from_source_site;  
         void build_map_if_necessary(unsigned reference_index);
 
         void reverse(std::vector<std::uint64_t> const &lengths_of_parent_sequences,
@@ -38,7 +38,7 @@ namespace utils
 
         static void format_error();
 
-        std::vector<std::uint64_t> lengths;         // <-- 改：真实染色体长度
+        std::vector<std::uint64_t> lengths;         
         std::vector<std::string> names;
         std::vector<bool> is_prefix;
         std::unordered_map<std::string, unsigned> name_to_index;

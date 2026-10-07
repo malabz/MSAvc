@@ -7,7 +7,7 @@
 #include "Arguments.hpp"
 #include "Mutation.hpp"
 
-static char constexpr version[]                                     = "v0.1.20260925";
+static char constexpr version[]                                     = "v0.1.20261006";
 static char constexpr help_description[]                            = "";
 static char constexpr version_description[]                         = "";
 static char constexpr infile_description[]                          = "";
@@ -314,7 +314,7 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
     // reference_genome_prefix 模式下 reference_index 是哨兵，拿不到 lengths
     if (reference_index != std::numeric_limits<unsigned>::max() - 1)
     {
-        std::uint64_t const ref_len = infile.lengths[reference_index];   // 只声明这一次
+        std::uint64_t const ref_len = infile.lengths[reference_index];   
 
         // maximum AC 的正确上界 = 单块最大序列数，而不是跨 block 去重后的并集
         std::uint64_t max_block_seq = 0;
@@ -323,9 +323,9 @@ void arguments::check_arguments(utils::MultipleAlignmentFormat const &infile)
                 max_block_seq = record.sequences.size();
 
         if (rpos == std::numeric_limits<std::uint64_t>::max())
-            rpos = ref_len + 1;                    // 用户没给 -e：覆盖整条参考
+            rpos = ref_len + 1;                    
         if (rpos > ref_len + 1)
-            rpos = ref_len + 1;                    // 用户给了但超了：截断
+            rpos = ref_len + 1;                    
 
         if (maximum_alternative_allele_count_acceptable == std::numeric_limits<std::uint64_t>::max())
             maximum_alternative_allele_count_acceptable = max_block_seq;

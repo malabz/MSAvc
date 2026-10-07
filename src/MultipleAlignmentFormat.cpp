@@ -3,6 +3,7 @@
 #include <numeric>
 #include <array>
 #include <cstdint>
+#include <cstdio>
 
 #include "MultipleAlignmentFormat.hpp"
 #include "Arguments.hpp"
@@ -39,7 +40,6 @@ static std::uint64_t string_to_uint64(std::string const &num) noexcept
         std::cerr << "\033[31m" << e.what() << "\033[0m\n";
         exit(1);
     }
-
     return u;
 }
 
